@@ -4,6 +4,20 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { useApp } from '@/context/AppContext';
 import styles from './GamesScreen.module.css';
 
+/** Soft per-category accent tints so each market row reads distinctly. */
+const CATEGORY_ACCENTS: Record<string, { soft: string; dot: string }> = {
+  'cat-world-cup': { soft: '#DCFCE7', dot: '#16A34A' },
+  'cat-lebron-decision': { soft: '#F3E8FF', dot: '#7C3AED' },
+  'cat-brain-rot': { soft: '#FCE7F3', dot: '#DB2777' },
+  'cat-nyc-core': { soft: '#DBEAFE', dot: '#2563EB' },
+  'cat-food': { soft: '#FFEDD5', dot: '#EA580C' },
+  'cat-random': { soft: '#F7FFDE', dot: '#1a1919' },
+};
+
+function categoryAccent(id: string): { soft: string; dot: string } {
+  return CATEGORY_ACCENTS[id] ?? { soft: '#F4F4F5', dot: '#1a1919' };
+}
+
 export function GamesScreen() {
   const {
     playerName,
@@ -32,7 +46,31 @@ export function GamesScreen() {
         totalRbp={bestScore > 0 ? bestScore : undefined}
       />
 
-      <h2 className={styles.sectionTitle}>Track Your Forecasts</h2>
+      {!categoriesLoading && !categoriesError && (
+        <div className={styles.statStrip}>
+          <div className={styles.stat}>
+            <span className={`${styles.statValue} mono`}>
+              {bestScore > 0 ? bestScore.toFixed(0) : '—'}
+            </span>
+            <span className={styles.statLabel}>Best Score</span>
+          </div>
+          <span className={styles.statDivider} />
+          <div className={styles.stat}>
+            <span className={`${styles.statValue} mono`}>{streak}</span>
+            <span className={styles.statLabel}>Sessions</span>
+          </div>
+          <span className={styles.statDivider} />
+          <div className={styles.stat}>
+            <span className={`${styles.statValue} mono`}>{categories.length || '—'}</span>
+            <span className={styles.statLabel}>Markets</span>
+          </div>
+        </div>
+      )}
+
+      <div className={styles.sectionRow}>
+        <h2 className={styles.sectionTitle}>Open Markets</h2>
+        <span className={styles.sectionHint}>Tap to forecast</span>
+      </div>
 
       {categoriesLoading ? (
         <div className={styles.center}>
@@ -58,39 +96,38 @@ export function GamesScreen() {
         </div>
       ) : (
         <div className={styles.list}>
-          {categories.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={styles.card}
-              onClick={() => navigate({ name: 'category-detail', categoryId: item.id })}
-            >
-              <div className={styles.cardTop}>
-                <div className={styles.closingBadge}>
-                  <span className={styles.closingDot} />
-                  <span className={styles.closingText}>OPEN</span>
+          {categories.map((item) => {
+            const accent = categoryAccent(item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.card}
+                onClick={() => navigate({ name: 'category-detail', categoryId: item.id })}
+              >
+                <div className={styles.cardMain}>
+                  <span className={styles.iconTile} style={{ background: accent.soft }}>
+                    {item.icon}
+                  </span>
+                  <span className={styles.cardText}>
+                    <span className={styles.cardTitle}>{item.name}</span>
+                    <span className={styles.cardDesc}>{item.description}</span>
+                  </span>
+                  <span className={styles.statusPill}>
+                    <span className={styles.statusDot} style={{ background: accent.dot }} />
+                    OPEN
+                  </span>
                 </div>
-                <span className={styles.editLink}>Play →</span>
-              </div>
 
-              <div className={styles.cardMatch}>
-                <div className={styles.side}>
-                  <span className={styles.sideIcon}>{item.icon}</span>
-                  <span className={styles.sideLabel}>Real</span>
-                </div>
-                <div className={styles.cardCenter}>
-                  <span className={styles.cardTitle}>{item.name}</span>
-                  <span className={styles.cardDesc}>{item.description}</span>
-                </div>
-                <div className={`${styles.side} ${styles.sideRight}`}>
-                  <span className={styles.sideIcon}>🤖</span>
-                  <span className={styles.sideLabel}>Fake</span>
-                </div>
-              </div>
+                <span className={styles.divider} />
 
-              <span className={styles.cardMeta}>10 images · 10s window · accuracy + speed</span>
-            </button>
-          ))}
+                <div className={styles.cardFooter}>
+                  <span className={`${styles.meta} mono`}>10 rounds · 10s · accuracy + speed</span>
+                  <span className={styles.playPill}>Play →</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

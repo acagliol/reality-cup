@@ -7,14 +7,71 @@
   overflow-y: auto;
 }
 
+/* Quick stats strip under the header */
+.statStrip {
+  display: flex;
+  align-items: center;
+  margin: 0 20px 20px;
+  padding: 14px 8px;
+  background: #ffffff;
+  border: 1px solid #ececee;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(26, 25, 25, 0.05);
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1919;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.statDivider {
+  width: 1px;
+  height: 26px;
+  background: #ececee;
+}
+
+/* Section header */
+.sectionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 20px;
+  margin-bottom: 12px;
+}
+
 .sectionTitle {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 18px;
   font-weight: 800;
   color: #1a1919;
-  padding: 0 20px;
+  letter-spacing: -0.2px;
 }
 
+.sectionHint {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a1a1aa;
+}
+
+/* States */
 .center {
   flex: 1;
   display: flex;
@@ -50,121 +107,131 @@
   font-weight: 700;
 }
 
+/* Market list */
 .list {
-  padding: 0 20px 24px;
+  padding: 0 20px 28px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid #e4e4e7;
-  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
-  text-align: left;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #ececee;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(26, 25, 25, 0.05);
+  text-align: left;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
 }
 
-.cardTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.card:hover {
+  transform: translateY(-1px);
+  border-color: #d4d4d8;
+  box-shadow: 0 6px 18px rgba(26, 25, 25, 0.08);
 }
 
-.closingBadge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #f7ffde;
-  padding: 4px 10px;
-  border-radius: 999px;
+.card:active {
+  transform: translateY(0);
 }
 
-.closingDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background: #e4ff1a;
-}
-
-.closingText {
-  font-size: 10px;
-  font-weight: 800;
-  color: #1a1919;
-  letter-spacing: 0.6px;
-}
-
-.editLink {
-  font-size: 13px;
-  font-weight: 700;
-  color: #52525b;
-}
-
-.cardMatch {
+.cardMain {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 12px;
 }
 
-.side {
+.iconTile {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 52px;
-}
-
-.sideRight {
-  align-items: center;
-}
-
-.sideIcon {
+  justify-content: center;
   font-size: 24px;
+  border-radius: 12px;
 }
 
-.sideLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: #a1a1aa;
-  margin-top: 4px;
-}
-
-.cardCenter {
+.cardText {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0 8px;
+  gap: 2px;
 }
 
 .cardTitle {
-  color: #1a1919;
   font-size: 15px;
   font-weight: 800;
-  text-align: center;
-  margin-bottom: 4px;
+  color: #1a1919;
+  letter-spacing: -0.1px;
 }
 
 .cardDesc {
-  color: #a1a1aa;
-  font-size: 12px;
-  line-height: 17px;
-  text-align: center;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: #71717a;
   overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
-.cardMeta {
+.statusPill {
+  flex-shrink: 0;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #52525b;
+  letter-spacing: 0.6px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f1f3;
+  margin: 12px 0 10px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meta {
   font-size: 11px;
   font-weight: 600;
   color: #a1a1aa;
-  text-align: center;
-  margin-top: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: -0.1px;
+}
+
+.playPill {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e4ff1a;
+  color: #1a1919;
+  font-size: 12px;
+  font-weight: 800;
+  transition: filter 0.14s ease;
+}
+
+.card:hover .playPill {
+  filter: brightness(0.95);
 }
