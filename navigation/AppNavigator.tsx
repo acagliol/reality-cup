@@ -5,8 +5,7 @@ import { CategoryDetailScreen } from '../screens/CategoryDetailScreen';
 import { GameHistoryDetailScreen } from '../screens/GameHistoryDetailScreen';
 import { GameScreen } from '../screens/GameScreen';
 import { GameSummaryScreen } from '../screens/GameSummaryScreen';
-import { GamesScreen } from '../screens/GamesScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { MainTabsScreen } from '../screens/MainTabsScreen';
 import { TrophyCabinetScreen } from '../screens/TrophyCabinetScreen';
 import { theme } from '../lib/theme';
 
@@ -34,7 +33,7 @@ function resolveCategoryId(
 }
 
 export function AppNavigator() {
-  const { screen, activeTab, loading, activeGame, gameHistory } = useApp();
+  const { screen, loading, activeGame, gameHistory } = useApp();
   const categoryId = resolveCategoryId(screen, activeGame, gameHistory);
 
   if (loading) {
@@ -48,7 +47,7 @@ export function AppNavigator() {
   const content = (() => {
     switch (screen.name) {
       case 'tabs':
-        return activeTab === 'games' ? <GamesScreen /> : <ProfileScreen />;
+        return <MainTabsScreen />;
       case 'category-detail':
         return <CategoryDetailScreen categoryId={screen.categoryId} />;
       case 'game':
@@ -60,7 +59,7 @@ export function AppNavigator() {
       case 'trophy-cabinet':
         return <TrophyCabinetScreen />;
       default:
-        return <GamesScreen />;
+        return <MainTabsScreen />;
     }
   })();
 

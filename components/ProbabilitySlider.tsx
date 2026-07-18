@@ -7,14 +7,12 @@ import { theme } from '../lib/theme';
 interface ProbabilitySliderProps {
   value: number;
   onChange: (value: number) => void;
-  onRelease?: (value: number) => void;
   disabled?: boolean;
 }
 
 export function ProbabilitySlider({
   value,
   onChange,
-  onRelease,
   disabled,
 }: ProbabilitySliderProps) {
   const cat = useCategoryTheme();
@@ -48,14 +46,11 @@ export function ProbabilitySlider({
         step={1}
         value={value}
         onValueChange={onChange}
-        onSlidingComplete={onRelease}
         disabled={disabled}
         minimumTrackTintColor={cat.fake}
         maximumTrackTintColor={cat.real}
         thumbTintColor={cat.primary}
       />
-
-      <Text style={styles.hint}>Release to lock forecast</Text>
     </View>
   );
 }
@@ -112,12 +107,6 @@ const styles = StyleSheet.create({
   slider: {
     width: '100%',
     height: 44,
-  },
-  hint: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    fontWeight: '500',
   },
 });
 

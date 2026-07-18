@@ -7,9 +7,9 @@ interface TabBarProps {
   onChange: (tab: TabId) => void;
 }
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'games', label: 'Markets' },
-  { id: 'profile', label: 'Profile' },
+const TABS: { id: TabId; label: string; icon: string }[] = [
+  { id: 'games', label: 'Markets', icon: '📊' },
+  { id: 'profile', label: 'Profile', icon: '👤' },
 ];
 
 export function TabBar({ activeTab, onChange }: TabBarProps) {
@@ -20,9 +20,12 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
         return (
           <Pressable
             key={tab.id}
-            style={[styles.tab, active && styles.tabActive]}
+            style={styles.tab}
             onPress={() => onChange(tab.id)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
           >
+            <Text style={[styles.icon, active && styles.iconActive]}>{tab.icon}</Text>
             <Text style={[styles.label, active && styles.labelActive]}>{tab.label}</Text>
           </Pressable>
         );
@@ -34,30 +37,34 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: theme.radius.md,
-    padding: 4,
-    marginHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.md,
+    ...theme.shadow.md,
   },
   tab: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
     alignItems: 'center',
-    borderRadius: theme.radius.sm,
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.sm,
+    gap: 2,
   },
-  tabActive: {
-    backgroundColor: theme.colors.surface,
-    ...theme.shadow.sm,
+  icon: {
+    fontSize: 20,
+    opacity: 0.45,
+  },
+  iconActive: {
+    opacity: 1,
   },
   label: {
     color: theme.colors.textMuted,
-    fontWeight: '700',
-    fontSize: 14,
+    fontWeight: '600',
+    fontSize: 11,
   },
   labelActive: {
     color: theme.colors.text,
+    fontWeight: '800',
   },
 });

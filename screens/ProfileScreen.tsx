@@ -1,11 +1,10 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { TabBar } from '../components/TabBar';
 import { useApp } from '../context/AppContext';
 import { theme } from '../lib/theme';
 
 export function ProfileScreen() {
-  const { playerName, activeTab, setActiveTab, gameHistory, navigate } = useApp();
+  const { playerName, gameHistory, navigate } = useApp();
 
   const completedGames = gameHistory;
 
@@ -15,8 +14,6 @@ export function ProfileScreen() {
         title="Analyst profile"
         subtitle={`Forecasting as ${playerName ?? 'Anonymous'}`}
       />
-
-      <TabBar activeTab={activeTab} onChange={setActiveTab} />
 
       <Pressable
         style={styles.trophyButton}

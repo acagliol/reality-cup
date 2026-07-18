@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CountdownTimer } from '../components/CountdownTimer';
 import { ProbabilitySlider } from '../components/ProbabilitySlider';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -10,7 +10,7 @@ import { completeGame, submitRoundAnswer } from '../lib/services/gameService';
 import { theme } from '../lib/theme';
 import { ROUND_TIME_MS } from '../types/game';
 
-type Phase = 'playing' | 'locking' | 'submitting';
+type Phase = 'playing' | 'submitting';
 
 export function GameScreen() {
   const cat = useCategoryTheme();
@@ -19,7 +19,6 @@ export function GameScreen() {
   const [sliderValue, setSliderValue] = useState(50);
   const [remainingMs, setRemainingMs] = useState(ROUND_TIME_MS);
   const [phase, setPhase] = useState<Phase>('playing');
-  const [lockedRound, setLockedRound] = useState<number | null>(null);
 
   const sliderRef = useRef(50);
   const phaseRef = useRef<Phase>('playing');
@@ -34,9 +33,6 @@ export function GameScreen() {
     async (value: number) => {
       if (phaseRef.current !== 'playing' || !activeGame || currentIndex < 0 || !round) return;
 
-      phaseRef.current = 'locking';
-      setPhase('locking');
-      setLockedRound(round.roundNumber);
       if (timerRef.current) clearInterval(timerRef.current);
 
       const responseTimeMs = Math.min(Date.now() - roundStartRef.current, ROUND_TIME_MS);
@@ -54,10 +50,6 @@ export function GameScreen() {
       }
 
       setActiveGame(updated);
-      await new Promise((r) => setTimeout(r, 450));
-      phaseRef.current = 'playing';
-      setPhase('playing');
-      setLockedRound(null);
     },
     [activeGame, currentIndex, navigate, refreshHistory, round, setActiveGame],
   );
@@ -65,6 +57,7 @@ export function GameScreen() {
   useEffect(() => {
     if (currentIndex < 0 || phase !== 'playing') return;
 
+    phaseRef.current = 'playing';
     roundStartRef.current = Date.now();
     sliderRef.current = 50;
     setSliderValue(50);
@@ -136,30 +129,21 @@ export function GameScreen() {
                 sliderRef.current = v;
                 setSliderValue(v);
               }}
-              onRelease={submitAnswer}
             />
+            <Pressable
+              style={[styles.submitButton, { backgroundColor: cat.primary }]}
+              onPress={() => submitAnswer(sliderValue)}
+            >
+              <Text style={styles.submitText}>Submit forecast</Text>
+            </Pressable>
           </View>
         </>
       )}
 
-      {(phase === 'locking' || phase === 'submitting') && (
-        <View style={styles.lockOverlay}>
-          <View style={[styles.lockCard, { backgroundColor: cat.primaryMuted }]}>
-            {phase === 'submitting' ? (
-              <>
-                <ActivityIndicator color={cat.primary} size="large" />
-                <Text style={[styles.lockTitle, { color: cat.primary }]}>Calculating results…</Text>
-              </>
-            ) : (
-              <>
-                <Text style={[styles.lockIcon, { color: cat.primary }]}>✓</Text>
-                <Text style={[styles.lockTitle, { color: cat.primary }]}>
-                  Round {lockedRound} locked in
-                </Text>
-                <Text style={styles.lockSub}>Results after all {activeGame.rounds.length} forecasts</Text>
-              </>
-            )}
-          </View>
+      {phase === 'submitting' && (
+        <View style={styles.submitOverlay}>
+          <ActivityIndicator color={cat.primary} size="large" />
+          <Text style={[styles.submittingTitle, { color: cat.primary }]}>Calculating results…</Text>
         </View>
       )}
     </View>
@@ -215,37 +199,32 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
+  submitButton: {
+    marginTop: theme.spacing.lg,
+    borderRadius: theme.radius.md,
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+    ...theme.shadow.sm,
+  },
+  submitText: {
+    color: theme.colors.surface,
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
   error: {
     color: theme.colors.danger,
     padding: theme.spacing.xl,
   },
-  lockOverlay: {
+  submitOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: theme.spacing.md,
     padding: theme.spacing.xxl,
   },
-  lockCard: {
-    borderRadius: theme.radius.xl,
-    padding: theme.spacing.xxxl,
-    alignItems: 'center',
-    minWidth: 260,
-    ...theme.shadow.md,
-  },
-  lockIcon: {
-    fontSize: 48,
+  submittingTitle: {
+    fontSize: 18,
     fontWeight: '800',
-    marginBottom: theme.spacing.sm,
-  },
-  lockTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  lockSub: {
-    marginTop: theme.spacing.sm,
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
   },
 });
