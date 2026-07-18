@@ -1,12 +1,11 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { TabBar } from '../components/TabBar';
 import { useApp } from '../context/AppContext';
 import { MOCK_CATEGORIES } from '../lib/mock/data';
 import { getCategoryTheme, theme } from '../lib/theme';
 
 export function GamesScreen() {
-  const { playerName, activeTab, setActiveTab, navigate } = useApp();
+  const { playerName, navigate } = useApp();
 
   return (
     <View style={styles.container}>
@@ -14,8 +13,6 @@ export function GamesScreen() {
         title="Forecast Markets"
         subtitle={`${playerName ?? 'Analyst'} — calibrate your eye against AI.`}
       />
-
-      <TabBar activeTab={activeTab} onChange={setActiveTab} />
 
       <FlatList
         data={MOCK_CATEGORIES}
