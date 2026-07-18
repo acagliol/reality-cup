@@ -1,30 +1,40 @@
 import type { GameSession, TrophyEntry } from '../../types/game';
-import {
-  getAiAnswersForRound,
-  getCategoryById,
-  getCrowdMean,
-  getRoundsForCategory,
-  MOCK_CATEGORIES,
-} from '../mock/data';
+import { fetchCategories, fetchCategoryById } from './categoryService';
 import { upsertGame } from '../storage/gameHistoryStorage';
 import { scoreRound, sumRoundScores } from '../scoring';
 import { fetchCategoryLeaderboard } from './leaderboardService';
+import {
+  fetchAiAnswersForRound,
+  fetchCrowdMeanForRound,
+  fetchRoundsForCategory,
+} from './roundContentService';
 import { syncCompletedGame, syncProfile } from './supabaseSyncService';
 import type { GameRound } from '../../types/game';
 import { ROUNDS_PER_GAME } from '../../types/game';
-export function createGameSession(categoryId: string, playerName: string): GameSession {
-  const category = getCategoryById(categoryId);
+
+export async function createGameSession(
+  categoryId: string,
+  playerName: string,
+): Promise<GameSession> {
+  const category = await fetchCategoryById(categoryId);
   if (!category) throw new Error('Category not found');
 
-  const content = getRoundsForCategory(categoryId, ROUNDS_PER_GAME);
-  const rounds: GameRound[] = content.map((item, index) => ({
-    roundNumber: index + 1,
-    roundContentId: item.id,
-    imageUrl: item.imageUrl,
-    truthValue: item.truthValue,
-    crowdMean: getCrowdMean(item.id),
-    aiAnswers: getAiAnswersForRound(item.id),
-  }));
+  const content = await fetchRoundsForCategory(categoryId, ROUNDS_PER_GAME);
+  const rounds: GameRound[] = await Promise.all(
+    content.map(async (item, index) => ({
+      roundNumber: index + 1,
+      roundContentId: item.id,
+      imageUrl: item.imageUrl,
+      truthValue: item.truthValue,
+      crowdMean: await fetchCrowdMeanForRound(item.id),
+      aiAnswers: await fetchAiAnswersForRound(item.id),
+    })),
+  );
+
+  const uniqueUrls = new Set(rounds.map((r) => r.imageUrl));
+  if (uniqueUrls.size !== rounds.length) {
+    throw new Error('Session has duplicate images — try starting a new game.');
+  }
 
   return {
     id: `game_${Date.now()}`,
@@ -124,21 +134,22 @@ export async function getTrophyCabinet(
   playerName: string,
   history: GameSession[],
 ): Promise<TrophyEntry[]> {
+  const categories = await fetchCategories();
   const entries = await Promise.all(
-    MOCK_CATEGORIES.map(async (category) => {
+    categories.map(async (category) => {
       const categoryGames = history.filter(
-        (g) => g.categoryId === category.id && g.playerName === playerName,
+        (g) =>
+          g.categoryId === category.id &&
+          g.playerName === playerName &&
+          g.status === 'completed',
       );
-      const bestScore = categoryGames.length
-        ? Math.max(...categoryGames.map((g) => g.totalScore))
-        : 0;
+      if (categoryGames.length === 0) return null;
 
-      let rank: number | null = null;
-      if (categoryGames.length > 0) {
-        const board = await fetchCategoryLeaderboard(category.id, playerName, bestScore);
-        const top = board.topEntries.find((e) => e.isCurrentPlayer);
-        rank = top?.rank ?? board.pinnedPlayerEntry?.rank ?? null;
-      }
+      const bestScore = Math.max(...categoryGames.map((g) => g.totalScore));
+
+      const board = await fetchCategoryLeaderboard(category.id, playerName, bestScore);
+      const top = board.topEntries.find((e) => e.isCurrentPlayer);
+      const rank = top?.rank ?? board.pinnedPlayerEntry?.rank ?? null;
 
       return {
         categoryId: category.id,
@@ -151,12 +162,14 @@ export async function getTrophyCabinet(
     }),
   );
 
-  return entries.sort((a, b) => {
-    if (a.rank === null && b.rank === null) return a.categoryName.localeCompare(b.categoryName);
-    if (a.rank === null) return 1;
-    if (b.rank === null) return -1;
-    return a.rank - b.rank;
-  });
+  return entries
+    .filter((entry): entry is TrophyEntry => entry !== null)
+    .sort((a, b) => {
+      if (a.rank === null && b.rank === null) return a.categoryName.localeCompare(b.categoryName);
+      if (a.rank === null) return 1;
+      if (b.rank === null) return -1;
+      return a.rank - b.rank;
+    });
 }
 
 export { syncProfile };

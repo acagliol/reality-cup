@@ -1,6 +1,5 @@
 import type { CategoryLeaderboard, LeaderboardEntry } from '../../types/game';
 import { LEADERBOARD_TOP_N } from '../../types/game';
-import { buildMockLeaderboard } from '../mock/data';
 import { isSupabaseConfigured, supabase } from '../supabase';
 
 interface LeaderboardRow {
@@ -39,16 +38,23 @@ export function splitLeaderboard(
   };
 }
 
+function localOnlyLeaderboard(playerName: string, localBestScore: number): CategoryLeaderboard {
+  if (localBestScore <= 0) {
+    return { topEntries: [], pinnedPlayerEntry: null };
+  }
+  return splitLeaderboard(
+    [{ rank: 1, playerName, score: localBestScore, isCurrentPlayer: true }],
+    playerName,
+  );
+}
+
 export async function fetchCategoryLeaderboard(
   categoryId: string,
   playerName: string,
   localBestScore: number,
 ): Promise<CategoryLeaderboard> {
   if (!isSupabaseConfigured || !supabase) {
-    return splitLeaderboard(
-      buildMockLeaderboard(playerName, localBestScore, categoryId),
-      playerName,
-    );
+    return localOnlyLeaderboard(playerName, localBestScore);
   }
 
   const { data, error } = await supabase
@@ -58,35 +64,32 @@ export async function fetchCategoryLeaderboard(
     .order('best_score', { ascending: false });
 
   if (error) {
-    console.warn('Leaderboard fetch failed, using mock data:', error.message);
-    return splitLeaderboard(
-      buildMockLeaderboard(playerName, localBestScore, categoryId),
-      playerName,
-    );
+    console.warn('Leaderboard fetch failed:', error.message);
+    return localOnlyLeaderboard(playerName, localBestScore);
   }
 
   const rows = (data ?? []) as LeaderboardRow[];
-  let playerRows = rows.map((r) => ({
+  const playerRows = rows.map((r) => ({
     playerName: r.player_name,
     score: Number(r.best_score),
   }));
 
-  const playerInDb = playerRows.some((r) => r.playerName === playerName);
-  if (!playerInDb && localBestScore > 0) {
-    playerRows = [...playerRows, { playerName, score: localBestScore }];
+  if (playerRows.length === 0) {
+    if (localBestScore > 0) {
+      return splitLeaderboard(
+        [{ rank: 1, playerName, score: localBestScore, isCurrentPlayer: true }],
+        playerName,
+      );
+    }
+    return { topEntries: [], pinnedPlayerEntry: null };
   }
 
-  const ranked = rankEntries(playerRows, playerName);
-  return splitLeaderboard(ranked, playerName);
-}
+  const playerInDb = playerRows.some((r) => r.playerName === playerName);
+  const mergedRows =
+    !playerInDb && localBestScore > 0
+      ? [...playerRows, { playerName, score: localBestScore }]
+      : playerRows;
 
-export function getMockCategoryLeaderboard(
-  categoryId: string,
-  playerName: string,
-  localBestScore: number,
-): CategoryLeaderboard {
-  return splitLeaderboard(
-    buildMockLeaderboard(playerName, localBestScore, categoryId),
-    playerName,
-  );
+  const ranked = rankEntries(mergedRows, playerName);
+  return splitLeaderboard(ranked, playerName);
 }

@@ -3,11 +3,15 @@ import type { ReactNode } from 'react';
 import { loadGameHistory } from '../lib/storage/gameHistoryStorage';
 import { getPlayerName, savePlayerName } from '../lib/storage/playerStorage';
 import { syncProfile } from '../lib/services/gameService';
-import type { GameSession, Screen, TabId } from '../types/game';
+import { fetchCategories } from '../lib/services/categoryService';
+import type { Category, GameSession, Screen, TabId } from '../types/game';
 
 interface AppContextValue {
   playerName: string | null;
   loading: boolean;
+  categories: Category[];
+  categoriesLoading: boolean;
+  categoriesError: string | null;
   activeTab: TabId;
   screen: Screen;
   gameHistory: GameSession[];
@@ -21,6 +25,8 @@ interface AppContextValue {
   saveName: (name: string) => Promise<void>;
   setActiveGame: (game: GameSession | null) => void;
   refreshHistory: () => Promise<void>;
+  refreshCategories: () => Promise<void>;
+  getCategoryById: (id: string) => Category | undefined;
   abandonActiveGame: () => void;
 }
 
@@ -33,8 +39,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [screenStack, setScreenStack] = useState<Screen[]>([{ name: 'tabs' }]);
   const [gameHistory, setGameHistory] = useState<GameSession[]>([]);
   const [activeGame, setActiveGame] = useState<GameSession | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   const screen = screenStack[screenStack.length - 1];
+
+  const refreshCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    setCategoriesError(null);
+    try {
+      const data = await fetchCategories();
+      setCategories(data);
+    } catch (err) {
+      setCategories([]);
+      setCategoriesError(err instanceof Error ? err.message : 'Failed to load categories');
+    } finally {
+      setCategoriesLoading(false);
+    }
+  }, []);
+
+  const getCategoryById = useCallback(
+    (id: string) => categories.find((c) => c.id === id),
+    [categories],
+  );
 
   const refreshHistory = useCallback(async () => {
     const history = await loadGameHistory();
@@ -47,8 +75,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setPlayerName(name);
       setGameHistory(history);
       setLoading(false);
+      await refreshCategories();
     })();
-  }, []);
+  }, [refreshCategories]);
 
   const navigate = useCallback((next: Screen) => {
     setScreenStack((stack) => [...stack, next]);
@@ -103,6 +132,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () => ({
       playerName,
       loading,
+      categories,
+      categoriesLoading,
+      categoriesError,
       activeTab,
       screen,
       gameHistory,
@@ -116,11 +148,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveName,
       setActiveGame,
       refreshHistory,
+      refreshCategories,
+      getCategoryById,
       abandonActiveGame,
     }),
     [
       playerName,
       loading,
+      categories,
+      categoriesLoading,
+      categoriesError,
       activeTab,
       screen,
       gameHistory,
@@ -132,6 +169,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetToTabs,
       saveName,
       refreshHistory,
+      refreshCategories,
+      getCategoryById,
       abandonActiveGame,
     ],
   );

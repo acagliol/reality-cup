@@ -1,11 +1,18 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useApp } from '../context/AppContext';
-import { MOCK_CATEGORIES } from '../lib/mock/data';
 import { theme } from '../lib/theme';
 
 export function GamesScreen() {
-  const { playerName, navigate, gameHistory } = useApp();
+  const {
+    playerName,
+    navigate,
+    gameHistory,
+    categories,
+    categoriesLoading,
+    categoriesError,
+    refreshCategories,
+  } = useApp();
 
   const bestScore = gameHistory.length
     ? Math.max(...gameHistory.map((g) => g.totalScore))
@@ -26,44 +33,58 @@ export function GamesScreen() {
 
       <Text style={styles.sectionTitle}>Track Your Forecasts</Text>
 
-      <FlatList
-        data={MOCK_CATEGORIES}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.card}
-            onPress={() => navigate({ name: 'category-detail', categoryId: item.id })}
-          >
-            <View style={styles.cardTop}>
-              <View style={styles.closingBadge}>
-                <View style={styles.closingDot} />
-                <Text style={styles.closingText}>OPEN</Text>
-              </View>
-              <Text style={styles.editLink}>Play →</Text>
-            </View>
-
-            <View style={styles.cardMatch}>
-              <View style={styles.side}>
-                <Text style={styles.sideIcon}>{item.icon}</Text>
-                <Text style={styles.sideLabel}>Real</Text>
-              </View>
-              <View style={styles.cardCenter}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              </View>
-              <View style={[styles.side, styles.sideRight]}>
-                <Text style={styles.sideIcon}>🤖</Text>
-                <Text style={styles.sideLabel}>Fake</Text>
-              </View>
-            </View>
-
-            <Text style={styles.cardMeta}>10 images · 10s window · Brier + RBP</Text>
+      {categoriesLoading ? (
+        <View style={styles.center}>
+          <ActivityIndicator color={theme.colors.textMuted} />
+        </View>
+      ) : categoriesError ? (
+        <View style={styles.center}>
+          <Text style={styles.errorTitle}>Could not load markets</Text>
+          <Text style={styles.errorText}>{categoriesError}</Text>
+          <Pressable style={styles.retryButton} onPress={refreshCategories}>
+            <Text style={styles.retryText}>Retry</Text>
           </Pressable>
-        )}
-      />
+        </View>
+      ) : (
+        <FlatList
+          data={categories}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.card}
+              onPress={() => navigate({ name: 'category-detail', categoryId: item.id })}
+            >
+              <View style={styles.cardTop}>
+                <View style={styles.closingBadge}>
+                  <View style={styles.closingDot} />
+                  <Text style={styles.closingText}>OPEN</Text>
+                </View>
+                <Text style={styles.editLink}>Play →</Text>
+              </View>
+
+              <View style={styles.cardMatch}>
+                <View style={styles.side}>
+                  <Text style={styles.sideIcon}>{item.icon}</Text>
+                  <Text style={styles.sideLabel}>Real</Text>
+                </View>
+                <View style={styles.cardCenter}>
+                  <Text style={styles.cardTitle}>{item.name}</Text>
+                  <Text style={styles.cardDesc} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                </View>
+                <View style={[styles.side, styles.sideRight]}>
+                  <Text style={styles.sideIcon}>🤖</Text>
+                  <Text style={styles.sideLabel}>Fake</Text>
+                </View>
+              </View>
+
+              <Text style={styles.cardMeta}>10 images · 10s window · Brier + RBP</Text>
+            </Pressable>
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -79,6 +100,37 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     paddingHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.md,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  errorTitle: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  errorText: {
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  retryButton: {
+    marginTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  retryText: {
+    color: theme.colors.text,
+    fontWeight: '700',
   },
   list: {
     paddingHorizontal: theme.spacing.xl,

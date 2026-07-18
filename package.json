@@ -14,6 +14,7 @@
     "react-native-url-polyfill": "^4.0.0"
   },
   "devDependencies": {
+    "@expo/ngrok": "^4.1.3",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
   },
@@ -26,7 +27,13 @@
     "ai:seed-models": "node --env-file=.env.local scripts/score-ai-answers.mjs seed-models",
     "ai:seed-content": "node --env-file=.env.local scripts/score-ai-answers.mjs seed-content",
     "ai:score-mock": "node --env-file=.env.local scripts/score-ai-answers.mjs score --mock",
-    "ai:score-live": "node --env-file=.env.local scripts/score-ai-answers.mjs score --live"
+    "ai:score-live": "node --env-file=.env.local scripts/score-ai-answers.mjs score --live",
+    "food:seed": "node --env-file=.env.local scripts/seed-foodfake.mjs",
+    "pools:build": "node scripts/build-category-pools.mjs",
+    "pools:build:launch": "node scripts/build-category-pools.mjs --category cat-world-cup,cat-nyc-core,cat-brain-rot",
+    "pools:seed": "node --env-file=.env.local scripts/seed-category-pools.mjs",
+    "pools:seed:launch": "node --env-file=.env.local scripts/seed-category-pools.mjs --category cat-world-cup,cat-nyc-core,cat-brain-rot",
+    "pools:sql": "node scripts/generate-category-seed-sql.mjs"
   },
   "private": true
 }

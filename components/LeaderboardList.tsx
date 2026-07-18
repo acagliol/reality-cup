@@ -35,6 +35,17 @@ function LeaderboardRow({
 }
 
 export function LeaderboardList({ data, compact }: LeaderboardListProps) {
+  const hasEntries = data.topEntries.length > 0 || data.pinnedPlayerEntry !== null;
+
+  if (!hasEntries) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>No scores yet</Text>
+        <Text style={styles.emptyText}>Complete a session to appear on the board.</Text>
+      </View>
+    );
+  }
+
   return (
     <View>
       <View style={styles.headerRow}>
@@ -159,5 +170,22 @@ const styles = StyleSheet.create({
   loadingText: {
     color: theme.colors.textMuted,
     fontSize: 13,
+  },
+  empty: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xxl,
+    paddingHorizontal: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  emptyTitle: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  emptyText: {
+    color: theme.colors.textMuted,
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

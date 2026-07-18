@@ -35,11 +35,15 @@ export function TrophyCabinetScreen() {
         <View style={styles.loading}>
           <ActivityIndicator color={theme.colors.textMuted} />
         </View>
+      ) : trophies.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>No trophies yet</Text>
+          <Text style={styles.emptyText}>Complete a forecast session to fill your cabinet.</Text>
+        </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
           {trophies.map((trophy) => {
             const cat = getCategoryTheme(trophy.categoryId);
-            const hasPlayed = trophy.gamesPlayed > 0;
 
             return (
               <View
@@ -54,21 +58,14 @@ export function TrophyCabinetScreen() {
                 </View>
                 <View style={styles.body}>
                   <Text style={styles.marketName}>{trophy.categoryName}</Text>
-                  {hasPlayed ? (
-                    <>
-                      <Text style={[styles.placement, { color: cat.primary }]}>
-                        #{trophy.rank} · {trophy.bestScore} pts
-                      </Text>
-                      <Text style={styles.meta}>
-                        {trophy.gamesPlayed} session{trophy.gamesPlayed === 1 ? '' : 's'}{' '}
-                        completed
-                      </Text>
-                    </>
-                  ) : (
-                    <Text style={styles.unplayed}>Not played yet</Text>
-                  )}
+                  <Text style={[styles.placement, { color: cat.primary }]}>
+                    #{trophy.rank ?? '—'} · {trophy.bestScore} pts
+                  </Text>
+                  <Text style={styles.meta}>
+                    {trophy.gamesPlayed} session{trophy.gamesPlayed === 1 ? '' : 's'} completed
+                  </Text>
                 </View>
-                {hasPlayed && trophy.rank !== null && trophy.rank <= 3 && (
+                {trophy.rank !== null && trophy.rank <= 3 && (
                   <Text style={styles.trophy}>🏆</Text>
                 )}
               </View>
@@ -89,6 +86,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  empty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.text,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   scroll: {
     paddingHorizontal: theme.spacing.xl,
@@ -135,12 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textMuted,
     marginTop: 2,
-  },
-  unplayed: {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    marginTop: 4,
-    fontStyle: 'italic',
   },
   trophy: {
     fontSize: 28,

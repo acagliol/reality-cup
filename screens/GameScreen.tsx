@@ -14,18 +14,20 @@ import { ProbabilitySlider } from '../components/ProbabilitySlider';
 import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
 import { completeGame, submitRoundAnswer } from '../lib/services/gameService';
-import { getCategoryById } from '../lib/mock/data';
 import { theme } from '../lib/theme';
 import type { GameSession } from '../types/game';
 import { ROUND_TIME_MS, ROUND_TIME_SECONDS } from '../types/game';
 
 export function GameScreen() {
-  const { activeGame, setActiveGame, finishGame, refreshHistory } = useApp();
+  const { activeGame, setActiveGame, finishGame, refreshHistory, getCategoryById } = useApp();
   const cat = useCategoryTheme();
   const category = activeGame ? getCategoryById(activeGame.categoryId) : undefined;
   const [sliderValue, setSliderValue] = useState(50);
   const [remainingMs, setRemainingMs] = useState(ROUND_TIME_MS);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
+  const [imageRetry, setImageRetry] = useState(0);
 
   const sliderRef = useRef(50);
   const submittingRef = useRef(false);
@@ -42,6 +44,10 @@ export function GameScreen() {
     activeGame?.rounds.findIndex((r) => !r.playerAnswer) ?? -1;
   const round = currentIndex >= 0 ? activeGame?.rounds[currentIndex] : undefined;
   const totalRounds = activeGame?.rounds.length ?? 0;
+  const roundImageUri =
+    round && imageRetry > 0
+      ? `${round.imageUrl}${round.imageUrl.includes('?') ? '&' : '?'}retry=${imageRetry}&t=${Date.now()}`
+      : round?.imageUrl;
 
   const submitAnswer = useCallback(
     async (value: number) => {
@@ -57,6 +63,7 @@ export function GameScreen() {
       if (!currentRound) return;
 
       submittingRef.current = true;
+      setIsSubmitting(true);
       setSubmitError(null);
 
       if (timerRef.current) {
@@ -94,6 +101,7 @@ export function GameScreen() {
       } catch (err) {
         console.error('submitAnswer failed', err);
         submittingRef.current = false;
+        setIsSubmitting(false);
         timerFiredRef.current = false;
         setSubmitError('Could not save your forecast. Try again.');
       }
@@ -112,17 +120,35 @@ export function GameScreen() {
     return () => sub.remove();
   }, []);
 
-  // Start / reset 10s timer whenever we land on a new open round
+  // Reset round UI when advancing to the next question
   useEffect(() => {
     if (!activeGame || currentIndex < 0 || activeGame.status === 'completed') return;
 
     submittingRef.current = false;
+    setIsSubmitting(false);
     timerFiredRef.current = false;
-    roundStartRef.current = Date.now();
+    setImageReady(false);
+    setImageRetry(0);
     sliderRef.current = 50;
     setSliderValue(50);
     setRemainingMs(ROUND_TIME_MS);
     setSubmitError(null);
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [activeGame?.id, activeGame?.status, currentIndex, round?.roundContentId]);
+
+  // Start the countdown only after the current round image has loaded
+  useEffect(() => {
+    if (!activeGame || currentIndex < 0 || activeGame.status === 'completed' || !imageReady) {
+      return;
+    }
+
+    roundStartRef.current = Date.now();
+    setRemainingMs(ROUND_TIME_MS);
+    timerFiredRef.current = false;
 
     if (timerRef.current) clearInterval(timerRef.current);
 
@@ -135,7 +161,14 @@ export function GameScreen() {
 
       if (left <= 0 && !timerFiredRef.current) {
         timerFiredRef.current = true;
-        void submitAnswerRef.current(sliderRef.current);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        setRemainingMs(0);
+        const value = sliderRef.current;
+        setSliderValue(value);
+        void submitAnswerRef.current(value);
       }
     }, 100);
 
@@ -145,7 +178,7 @@ export function GameScreen() {
         timerRef.current = null;
       }
     };
-  }, [activeGame?.id, activeGame?.status, currentIndex]);
+  }, [activeGame?.id, activeGame?.status, currentIndex, round?.roundContentId, imageReady]);
 
   if (activeGame?.status === 'completed') {
     return null;
@@ -162,7 +195,7 @@ export function GameScreen() {
   }
 
   function handleConfirm() {
-    if (submittingRef.current) return;
+    if (isSubmitting) return;
     timerFiredRef.current = true;
     void submitAnswer(sliderValue);
   }
@@ -209,7 +242,32 @@ export function GameScreen() {
         </View>
 
         <View style={styles.imageFrame}>
-          <Image source={{ uri: round.imageUrl }} style={styles.image} contentFit="cover" />
+          {!imageReady && (
+            <View style={styles.imageLoading}>
+              <ActivityIndicator color={theme.colors.textMuted} size="large" />
+              <Text style={styles.imageLoadingText}>Loading image…</Text>
+            </View>
+          )}
+          {roundImageUri ? (
+            <Image
+              key={`${round.roundContentId}-${imageRetry}`}
+              source={{ uri: roundImageUri }}
+              style={styles.image}
+              contentFit="cover"
+              cachePolicy="none"
+              transition={0}
+              onLoad={() => setImageReady(true)}
+              onError={() => {
+                if (imageRetry < 2) {
+                  setImageReady(false);
+                  setImageRetry((retry) => retry + 1);
+                } else {
+                  setSubmitError('Image failed to load — timer started anyway.');
+                  setImageReady(true);
+                }
+              }}
+            />
+          ) : null}
         </View>
 
         <View style={styles.questionBlock}>
@@ -223,21 +281,25 @@ export function GameScreen() {
             </View>
           </View>
           <ProbabilitySlider
+            key={round.roundContentId}
             value={sliderValue}
             onChange={(v) => {
-              if (submittingRef.current) return;
+              if (isSubmitting || !imageReady) return;
               sliderRef.current = v;
               setSliderValue(v);
             }}
-            disabled={submittingRef.current}
+            disabled={isSubmitting || !imageReady}
             showOddsBox={false}
           />
         </View>
 
         <Pressable
-          style={[styles.confirmBtn, submittingRef.current && styles.confirmBtnDisabled]}
+          style={[
+            styles.confirmBtn,
+            (isSubmitting || !imageReady) && styles.confirmBtnDisabled,
+          ]}
           onPress={handleConfirm}
-          disabled={submittingRef.current}
+          disabled={isSubmitting || !imageReady}
         >
           <Text style={styles.confirmText}>Confirm Probability</Text>
           <Text style={styles.confirmArrow}>→</Text>
@@ -246,7 +308,9 @@ export function GameScreen() {
         {submitError && <Text style={styles.error}>{submitError}</Text>}
 
         <Text style={styles.timerHint}>
-          Timer auto-submits your current odds at 0s — finish all {totalRounds} questions.
+          {imageReady
+            ? `Timer auto-submits your current odds at 0s — finish all ${totalRounds} questions.`
+            : 'Timer starts once the image finishes loading.'}
         </Text>
       </ScrollView>
     </View>
@@ -355,10 +419,25 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    minHeight: 220,
     ...theme.shadow.sm,
+  },
+  imageLoading: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surfaceAlt,
+    gap: theme.spacing.sm,
+    zIndex: 1,
+  },
+  imageLoadingText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
   },
   image: {
     height: 220,
+    width: '100%',
     backgroundColor: theme.colors.surfaceAlt,
   },
   questionBlock: {

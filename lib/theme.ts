@@ -26,57 +26,25 @@ export const ramp = {
   closingSoft: '#F3E8FF',
 };
 
+function rampCategory(id: string, name: string): CategoryTheme {
+  return {
+    id,
+    name,
+    primary: ramp.black,
+    primarySoft: ramp.gray600,
+    primaryMuted: ramp.limeMuted,
+    real: '#16A34A',
+    fake: ramp.black,
+    heroBg: ramp.white,
+  };
+}
+
 export const categoryThemes: Record<string, CategoryTheme> = {
-  'cat-nature': {
-    id: 'cat-nature',
-    name: 'Nature',
-    primary: ramp.black,
-    primarySoft: ramp.gray600,
-    primaryMuted: ramp.limeMuted,
-    real: '#16A34A',
-    fake: ramp.black,
-    heroBg: ramp.white,
-  },
-  'cat-people': {
-    id: 'cat-people',
-    name: 'People',
-    primary: ramp.black,
-    primarySoft: ramp.gray600,
-    primaryMuted: ramp.limeMuted,
-    real: '#16A34A',
-    fake: ramp.black,
-    heroBg: ramp.white,
-  },
-  'cat-animals': {
-    id: 'cat-animals',
-    name: 'Wildlife',
-    primary: ramp.black,
-    primarySoft: ramp.gray600,
-    primaryMuted: ramp.limeMuted,
-    real: '#16A34A',
-    fake: ramp.black,
-    heroBg: ramp.white,
-  },
-  'cat-architecture': {
-    id: 'cat-architecture',
-    name: 'Architecture',
-    primary: ramp.black,
-    primarySoft: ramp.gray600,
-    primaryMuted: ramp.limeMuted,
-    real: '#16A34A',
-    fake: ramp.black,
-    heroBg: ramp.white,
-  },
-  'cat-food': {
-    id: 'cat-food',
-    name: 'Food',
-    primary: ramp.black,
-    primarySoft: ramp.gray600,
-    primaryMuted: ramp.limeMuted,
-    real: '#16A34A',
-    fake: ramp.black,
-    heroBg: ramp.white,
-  },
+  'cat-world-cup': rampCategory('cat-world-cup', 'World Cup'),
+  'cat-lebron-decision': rampCategory('cat-lebron-decision', 'LeBron'),
+  'cat-brain-rot': rampCategory('cat-brain-rot', 'Brain Rot'),
+  'cat-nyc-core': rampCategory('cat-nyc-core', 'NYC Core'),
+  'cat-food': rampCategory('cat-food', 'Food'),
 };
 
 export const defaultCategoryTheme: CategoryTheme = {

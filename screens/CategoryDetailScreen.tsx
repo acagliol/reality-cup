@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LeaderboardSheet } from '../components/LeaderboardSheet';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useApp } from '../context/AppContext';
-import { getCategoryById } from '../lib/mock/data';
 import { createGameSession, getBestScoreForCategory } from '../lib/services/gameService';
 import { fetchCategoryLeaderboard } from '../lib/services/leaderboardService';
 import { theme } from '../lib/theme';
@@ -15,11 +14,20 @@ interface CategoryDetailScreenProps {
 }
 
 export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) {
-  const { playerName, goBack, navigate, setActiveGame, abandonActiveGame, gameHistory } =
-    useApp();
+  const {
+    playerName,
+    goBack,
+    navigate,
+    setActiveGame,
+    abandonActiveGame,
+    gameHistory,
+    getCategoryById,
+    categoriesLoading,
+  } = useApp();
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<CategoryLeaderboard | null>(null);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [starting, setStarting] = useState(false);
   const category = getCategoryById(categoryId);
 
   const bestScore = getBestScoreForCategory(gameHistory, categoryId, playerName ?? '');
@@ -42,6 +50,14 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
     if (leaderboardOpen) loadLeaderboard();
   }, [leaderboardOpen, loadLeaderboard]);
 
+  if (categoriesLoading) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader title="Loading…" onBack={goBack} />
+      </View>
+    );
+  }
+
   if (!category) {
     return (
       <View style={styles.container}>
@@ -50,12 +66,17 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
     );
   }
 
-  function startGame() {
-    if (!playerName) return;
-    abandonActiveGame();
-    const game = createGameSession(categoryId, playerName);
-    setActiveGame(game);
-    navigate({ name: 'game', categoryId });
+  async function startGame() {
+    if (!playerName || starting) return;
+    setStarting(true);
+    try {
+      abandonActiveGame();
+      const game = await createGameSession(categoryId, playerName);
+      setActiveGame(game);
+      navigate({ name: 'game', categoryId });
+    } finally {
+      setStarting(false);
+    }
   }
 
   return (
@@ -100,8 +121,10 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
             <Text style={styles.leaderboardText}>Global Leaderboard</Text>
           </Pressable>
 
-          <Pressable style={styles.startButton} onPress={startGame}>
-            <Text style={styles.startText}>Begin Forecasting →</Text>
+          <Pressable style={styles.startButton} onPress={startGame} disabled={starting}>
+            <Text style={styles.startText}>
+              {starting ? 'Loading images…' : 'Begin Forecasting →'}
+            </Text>
           </Pressable>
         </View>
       </View>

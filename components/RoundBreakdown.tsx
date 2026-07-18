@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ProbabilityTrack } from './ProbabilityTrack';
 import { CategoryThemeProvider } from '../context/CategoryThemeContext';
-import { getAiModelById } from '../lib/mock/data';
+import { getSponsorModelById } from '../lib/ai/sponsorModels';
 import { formatModelSubtitle } from '../lib/ai/sponsorModels';
 import {
   displayTruthValue,
@@ -70,7 +70,7 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
       />
 
       {round.aiAnswers.map((ai) => {
-        const model = getAiModelById(ai.aiModelId);
+        const model = getSponsorModelById(ai.aiModelId);
         return (
           <ProbabilityTrack
             key={ai.aiModelId}
@@ -91,7 +91,7 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
 
       <Text style={styles.aiTitle}>Model forecasts</Text>
       {round.aiAnswers.map((ai) => {
-        const model = getAiModelById(ai.aiModelId);
+        const model = getSponsorModelById(ai.aiModelId);
         return (
           <View key={`row-${ai.aiModelId}`} style={styles.aiRow}>
             <View style={styles.aiInfo}>

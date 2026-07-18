@@ -30,10 +30,10 @@ export const SPONSOR_AI_MODELS = [
 ];
 
 export const MOCK_CATEGORIES = [
-  { id: 'cat-nature', sortOrder: 1 },
-  { id: 'cat-people', sortOrder: 2 },
-  { id: 'cat-animals', sortOrder: 3 },
-  { id: 'cat-architecture', sortOrder: 4 },
+  { id: 'cat-world-cup', sortOrder: 1 },
+  { id: 'cat-lebron-decision', sortOrder: 2 },
+  { id: 'cat-brain-rot', sortOrder: 3 },
+  { id: 'cat-nyc-core', sortOrder: 4 },
   { id: 'cat-food', sortOrder: 5 },
 ];
 
