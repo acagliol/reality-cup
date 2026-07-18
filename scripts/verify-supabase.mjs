@@ -34,6 +34,18 @@ if (notes.status === 200) {
   fail(`Unexpected status reading 'notes': ${notes.status}`);
 }
 
+const board = await fetch(
+  `${url}/rest/v1/leaderboard_by_category?select=category_id,player_name,best_score&limit=1`,
+  { headers },
+);
+if (board.status === 200) {
+  console.log('✔ leaderboard_by_category view is readable');
+} else if (board.status === 404 || board.status === 400) {
+  console.log("⚠ leaderboard view missing — run supabase/schema.sql for live leaderboards (mock fallback works)");
+} else {
+  console.log(`⚠ leaderboard view returned HTTP ${board.status}`);
+}
+
 // Can we write (insert)?
 const ins = await fetch(`${url}/rest/v1/notes`, {
   method: 'POST',
