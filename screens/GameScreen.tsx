@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   BackHandler,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -202,7 +201,7 @@ export function GameScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <View style={styles.topSection}>
         <Text style={styles.screenTitle}>In Game</Text>
 
         <View style={styles.questionHeader}>
@@ -240,7 +239,9 @@ export function GameScreen() {
           </View>
           <CountdownTimer remainingMs={remainingMs} variant="clock" />
         </View>
+      </View>
 
+      <View style={styles.imageSection}>
         <View style={styles.imageFrame}>
           {!imageReady && (
             <View style={styles.imageLoading}>
@@ -253,7 +254,7 @@ export function GameScreen() {
               key={`${round.roundContentId}-${imageRetry}`}
               source={{ uri: roundImageUri }}
               style={styles.image}
-              contentFit="cover"
+              contentFit="contain"
               cachePolicy="none"
               transition={0}
               onLoad={() => setImageReady(true)}
@@ -269,29 +270,30 @@ export function GameScreen() {
             />
           ) : null}
         </View>
+      </View>
 
-        <View style={styles.questionBlock}>
-          <View style={styles.questionRow}>
-            <Text style={styles.questionText}>
-              What is the probability this image is AI-generated or manipulated?
-            </Text>
-            <View style={styles.oddsBox}>
-              <Text style={styles.oddsLabel}>YOUR ODDS</Text>
-              <Text style={styles.oddsValue}>{sliderValue}%</Text>
-            </View>
+      <View style={styles.bottomPanel}>
+        <View style={styles.questionRow}>
+          <Text style={styles.questionText} numberOfLines={2}>
+            What is the probability this image is AI-generated or manipulated?
+          </Text>
+          <View style={styles.oddsBox}>
+            <Text style={styles.oddsLabel}>YOUR ODDS</Text>
+            <Text style={styles.oddsValue}>{sliderValue}%</Text>
           </View>
-          <ProbabilitySlider
-            key={round.roundContentId}
-            value={sliderValue}
-            onChange={(v) => {
-              if (isSubmitting || !imageReady) return;
-              sliderRef.current = v;
-              setSliderValue(v);
-            }}
-            disabled={isSubmitting || !imageReady}
-            showOddsBox={false}
-          />
         </View>
+
+        <ProbabilitySlider
+          key={round.roundContentId}
+          value={sliderValue}
+          onChange={(v) => {
+            if (isSubmitting || !imageReady) return;
+            sliderRef.current = v;
+            setSliderValue(v);
+          }}
+          disabled={isSubmitting || !imageReady}
+          showOddsBox={false}
+        />
 
         <Pressable
           style={[
@@ -305,14 +307,14 @@ export function GameScreen() {
           <Text style={styles.confirmArrow}>→</Text>
         </Pressable>
 
-        {submitError && <Text style={styles.error}>{submitError}</Text>}
+        {submitError ? <Text style={styles.error}>{submitError}</Text> : null}
 
-        <Text style={styles.timerHint}>
+        <Text style={styles.timerHint} numberOfLines={2}>
           {imageReady
-            ? `Timer auto-submits your current odds at 0s — finish all ${totalRounds} questions.`
+            ? `Timer auto-submits at 0s — ${totalRounds} questions total.`
             : 'Timer starts once the image finishes loading.'}
         </Text>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -322,10 +324,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
   },
-  scroll: {
+  topSection: {
+    flexShrink: 0,
     paddingTop: 56,
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xxxl,
+  },
+  imageSection: {
+    flex: 1,
+    minHeight: 0,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.sm,
+  },
+  bottomPanel: {
+    flexShrink: 0,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+    gap: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   centered: {
     flex: 1,
@@ -338,7 +356,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -361,7 +379,7 @@ const styles = StyleSheet.create({
   progressBars: {
     flexDirection: 'row',
     gap: 6,
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
   },
   progressBar: {
     flex: 1,
@@ -380,7 +398,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
     gap: theme.spacing.md,
   },
   categoryBadge: {
@@ -414,12 +432,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   imageFrame: {
+    flex: 1,
+    minHeight: 0,
     borderRadius: theme.radius.lg,
     overflow: 'hidden',
-    marginBottom: theme.spacing.xl,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    minHeight: 220,
+    backgroundColor: theme.colors.surfaceAlt,
     ...theme.shadow.sm,
   },
   imageLoading: {
@@ -436,13 +455,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   image: {
-    height: 220,
-    width: '100%',
-    backgroundColor: theme.colors.surfaceAlt,
-  },
-  questionBlock: {
-    gap: theme.spacing.lg,
-    marginBottom: theme.spacing.xxl,
+    ...StyleSheet.absoluteFillObject,
   },
   questionRow: {
     flexDirection: 'row',
@@ -451,10 +464,10 @@ const styles = StyleSheet.create({
   },
   questionText: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
     color: theme.colors.text,
-    lineHeight: 28,
+    lineHeight: 22,
   },
   oddsBox: {
     backgroundColor: theme.colors.oddsBox,
@@ -472,7 +485,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   oddsValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: theme.colors.accentText,
     fontVariant: ['tabular-nums'],
@@ -485,8 +498,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.accent,
     borderRadius: theme.radius.full,
-    paddingVertical: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
     ...theme.shadow.sm,
   },
   confirmBtnDisabled: {
@@ -511,7 +523,6 @@ const styles = StyleSheet.create({
   error: {
     color: theme.colors.danger,
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
-    fontSize: 14,
+    fontSize: 13,
   },
 });

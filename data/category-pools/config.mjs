@@ -98,3 +98,15 @@ export const LEGACY_CATEGORY_IDS = [
   'cat-animals',
   'cat-architecture',
 ];
+
+/** Virtual category — pulls fakes from all pool categories at play time. */
+export const RANDOM_CATEGORY = {
+  id: 'cat-random',
+  name: 'Random Mix',
+  description:
+    'A shuffled blend of AI fakes from every category — spot the synthetic across themes.',
+  icon: '🎲',
+  sortOrder: 0,
+};
+
+export const POOL_CATEGORY_IDS = GAME_CATEGORIES.map((c) => c.id);

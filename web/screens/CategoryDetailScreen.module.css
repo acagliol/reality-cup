@@ -1,0 +1,133 @@
+.container {
+  flex: 1;
+  min-height: 100%;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+}
+
+.body {
+  flex: 1;
+  padding: 0 20px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 8px 20px rgba(26, 25, 25, 0.08);
+}
+
+.closingBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7ffde;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+
+.closingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e4ff1a;
+}
+
+.closingText {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1a1919;
+  letter-spacing: 0.6px;
+}
+
+.heroIcon {
+  font-size: 52px;
+  margin-bottom: 12px;
+}
+
+.heroStat {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.heroText {
+  color: #a1a1aa;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.bestScore {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #52525b;
+}
+
+.rules {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #e4e4e7;
+}
+
+.rulesTitle {
+  color: #1a1919;
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.rule {
+  color: #52525b;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboardButton {
+  border-radius: 999px;
+  padding: 12px;
+  text-align: center;
+  border: 2px solid #e4e4e7;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.startButton {
+  border-radius: 999px;
+  padding: 16px;
+  text-align: center;
+  background: #e4ff1a;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  color: #1a1919;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.startButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

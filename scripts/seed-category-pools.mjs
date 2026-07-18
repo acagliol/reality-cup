@@ -50,7 +50,7 @@ function loadManifest() {
   return JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
 }
 
-function buildRows(manifest, categories) {
+function buildRows(manifest, categories, { realOnly = false } = {}) {
   const rows = [];
 
   for (const category of categories) {
@@ -70,16 +70,18 @@ function buildRows(manifest, categories) {
       });
     });
 
-    pool.fake.forEach((entry, index) => {
-      rows.push({
-        id: `${category.id}-fake-${String(index + 1).padStart(3, '0')}`,
-        category_id: category.id,
-        image_url: entry.url,
-        truth_value: TRUTH_FAKE,
-        sort_order: sortOrder++,
-        active: true,
+    if (!realOnly) {
+      pool.fake.forEach((entry, index) => {
+        rows.push({
+          id: `${category.id}-fake-${String(index + 1).padStart(3, '0')}`,
+          category_id: category.id,
+          image_url: entry.url,
+          truth_value: TRUTH_FAKE,
+          sort_order: sortOrder++,
+          active: true,
+        });
       });
-    });
+    }
   }
 
   return rows;
@@ -88,6 +90,7 @@ function buildRows(manifest, categories) {
 async function main() {
   const flags = parseArgs(process.argv);
   const dryRun = Boolean(flags['dry-run']);
+  const realOnly = Boolean(flags['real-only']);
   const categoryFilter = flags.category
     ? flags.category.split(',').map((s) => s.trim()).filter(Boolean)
     : null;
@@ -100,7 +103,7 @@ async function main() {
   }
 
   const manifest = loadManifest();
-  const rows = buildRows(manifest, categories);
+  const rows = buildRows(manifest, categories, { realOnly });
 
   const realCount = rows.filter((r) => r.truth_value === TRUTH_REAL).length;
   const fakeCount = rows.filter((r) => r.truth_value === TRUTH_FAKE).length;

@@ -1,0 +1,170 @@
+.container {
+  flex: 1;
+  min-height: 0;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1919;
+  padding: 0 20px;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+  gap: 8px;
+}
+
+.errorTitle {
+  margin: 0;
+  color: #1a1919;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.errorText {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 14px;
+  text-align: center;
+  line-height: 20px;
+}
+
+.retryButton {
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  color: #1a1919;
+  font-weight: 700;
+}
+
+.list {
+  padding: 0 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  text-align: left;
+  width: 100%;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.closingBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7ffde;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.closingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e4ff1a;
+}
+
+.closingText {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1a1919;
+  letter-spacing: 0.6px;
+}
+
+.editLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: #52525b;
+}
+
+.cardMatch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 52px;
+}
+
+.sideRight {
+  align-items: center;
+}
+
+.sideIcon {
+  font-size: 24px;
+}
+
+.sideLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  margin-top: 4px;
+}
+
+.cardCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.cardTitle {
+  color: #1a1919;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.cardDesc {
+  color: #a1a1aa;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-align: center;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}

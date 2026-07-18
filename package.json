@@ -32,8 +32,14 @@
     "pools:build": "node scripts/build-category-pools.mjs",
     "pools:build:launch": "node scripts/build-category-pools.mjs --category cat-world-cup,cat-nyc-core,cat-brain-rot",
     "pools:seed": "node --env-file=.env.local scripts/seed-category-pools.mjs",
-    "pools:seed:launch": "node --env-file=.env.local scripts/seed-category-pools.mjs --category cat-world-cup,cat-nyc-core,cat-brain-rot",
-    "pools:sql": "node scripts/generate-category-seed-sql.mjs"
+    "pools:seed:launch": "node --env-file=.env.local scripts/seed-category-pools.mjs --category cat-world-cup,cat-nyc-core,cat-brain-rot --real-only",
+    "pools:seed:fakes": "node --env-file=.env.local scripts/seed-launch-fakes.mjs --zip-path \"C:/Users/anayp/Downloads/all_images.zip\"",
+    "pools:remove-reals": "node --env-file=.env.local scripts/remove-real-images.mjs",
+    "pools:seed:random": "node --env-file=.env.local scripts/seed-random-category.mjs",
+    "pools:sql": "node scripts/generate-category-seed-sql.mjs",
+    "web:dev": "npm run dev --prefix web",
+    "web:build": "npm run build --prefix web",
+    "web:start": "npm run start --prefix web"
   },
   "private": true
 }

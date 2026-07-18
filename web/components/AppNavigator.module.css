@@ -1,0 +1,15 @@
+.loading {
+  flex: 1;
+  min-height: 100%;
+  background: #fafafa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.root {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}

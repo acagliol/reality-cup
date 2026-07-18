@@ -7,6 +7,9 @@ node_modules/
 .expo/
 dist/
 web-build/
+
+# Next.js
+.next/
 expo-env.d.ts
 
 # Native

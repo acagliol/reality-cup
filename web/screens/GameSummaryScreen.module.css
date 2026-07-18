@@ -1,0 +1,93 @@
+.container {
+  flex: 1;
+  min-height: 100%;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 32px;
+}
+
+.statsRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #e4e4e7;
+}
+
+.statHighlight {
+  background: #f7ffde;
+  border-color: #e4ff1a;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.statLabel {
+  color: #a1a1aa;
+  font-size: 10px;
+  margin-top: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sectionTitle {
+  margin: 0 0 8px;
+  color: #1a1919;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sectionSpaced {
+  margin-top: 24px;
+}
+
+.button {
+  width: 100%;
+  margin-top: 16px;
+  border-radius: 999px;
+  padding: 16px;
+  text-align: center;
+  background: #e4ff1a;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  color: #1a1919;
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.missing {
+  margin: 0;
+  color: #a1a1aa;
+  text-align: center;
+  font-size: 14px;
+}
+
+.loadingWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+}

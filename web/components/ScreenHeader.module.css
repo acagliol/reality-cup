@@ -1,0 +1,67 @@
+.container {
+  padding: 56px 20px 16px;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.back {
+  padding: 0;
+}
+
+.backSpacer {
+  width: 1px;
+}
+
+.backText {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rbpBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.rbpLabel {
+  font-size: 10px;
+  font-weight: 800;
+  color: #a1a1aa;
+  letter-spacing: 0.8px;
+}
+
+.rbpValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 4px;
+}
+
+.title {
+  margin: 0;
+  color: #1a1919;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: #a1a1aa;
+  font-size: 14px;
+  line-height: 20px;
+}

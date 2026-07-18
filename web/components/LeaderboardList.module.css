@@ -1,0 +1,135 @@
+.headerRow {
+  display: flex;
+  align-items: center;
+  padding: 0 12px 8px;
+  border-bottom: 1px solid #e4e4e7;
+  margin-bottom: 8px;
+}
+
+.headerCell {
+  font-size: 11px;
+  font-weight: 800;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.rankCol {
+  width: 36px;
+}
+
+.nameCol {
+  flex: 1;
+}
+
+.scoreCol {
+  width: 72px;
+  text-align: right;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  background: #f4f4f5;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e4e4e7;
+}
+
+.rowCompact {
+  background: #ffffff;
+}
+
+.rowYou {
+  border-color: #e4ff1a;
+  background: #f7ffde;
+}
+
+.rank {
+  width: 36px;
+  font-weight: 800;
+  color: #a1a1aa;
+}
+
+.rankTop {
+  color: #1a1919;
+}
+
+.name {
+  flex: 1;
+  font-weight: 600;
+  color: #1a1919;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameYou {
+  font-weight: 800;
+}
+
+.score {
+  width: 72px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 15px;
+  color: #1a1919;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  gap: 8px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: #e4e4e7;
+}
+
+.dividerText {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  gap: 8px;
+}
+
+.loadingText {
+  color: #a1a1aa;
+  font-size: 13px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  gap: 8px;
+}
+
+.emptyTitle {
+  margin: 0;
+  color: #1a1919;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.emptyText {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 13px;
+  text-align: center;
+  line-height: 20px;
+}

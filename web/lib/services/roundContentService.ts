@@ -1,7 +1,7 @@
-import type { AiAnswer, RoundContent } from '../../types/game';
-import { ROUNDS_PER_GAME } from '../../types/game';
-import { isRandomCategory, POOL_CATEGORY_IDS, RANDOM_CATEGORY_ID } from '../constants/categories';
-import { isSupabaseConfigured, supabase } from '../supabase';
+import type { AiAnswer, RoundContent } from '@/types/game';
+import { ROUNDS_PER_GAME } from '@/types/game';
+import { isRandomCategory, POOL_CATEGORY_IDS, RANDOM_CATEGORY_ID } from '@/lib/constants/categories';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 interface RoundContentRow {
   id: string;
@@ -19,7 +19,7 @@ interface AiAnswerRow {
 function assertSupabase() {
   if (!isSupabaseConfigured || !supabase) {
     throw new Error(
-      'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in .env.local',
+      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local',
     );
   }
   return supabase;
@@ -125,7 +125,6 @@ export async function fetchCrowdMeanForRound(roundContentId: string): Promise<nu
   return Number(data.mean_answer);
 }
 
-/** Random sample from the available fake pool. */
 function shuffleRoundPool(rows: RoundContentRow[], count: number): RoundContentRow[] {
   if (rows.length <= count) return shuffle([...rows]);
 

@@ -1,0 +1,232 @@
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e4e4e7;
+  border-left-width: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  gap: 8px;
+}
+
+.headerMain {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 0;
+}
+
+.headerLeft {
+  flex: 1;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roundTitle {
+  display: block;
+  color: #1a1919;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.roundMeta {
+  display: block;
+  color: #a1a1aa;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.pointsBadge {
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.pointsBadgeText {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.popupBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #f4f4f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  padding: 0;
+}
+
+.popupBtnText {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.chevron {
+  color: #a1a1aa;
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+}
+
+.body {
+  padding: 0 16px 16px;
+  border-top: 1px solid #e4e4e7;
+  padding-top: 16px;
+}
+
+.notPlayed {
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.benchmarkNote {
+  font-size: 11px;
+  color: #a1a1aa;
+  margin: 0 0 12px;
+  line-height: 16px;
+}
+
+.imageWrap {
+  margin-bottom: 12px;
+}
+
+.image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f4f4f5;
+}
+
+.scoreRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.scorePill {
+  flex: 1;
+  background: #f4f4f5;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scorePillLabel {
+  color: #a1a1aa;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scorePillValue {
+  color: #1a1919;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.aiTitle {
+  color: #1a1919;
+  font-weight: 700;
+  margin: 8px 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aiRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f4f4f5;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.aiInfo {
+  flex: 1;
+}
+
+.aiName {
+  display: block;
+  color: #1a1919;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aiProvider {
+  display: block;
+  color: #a1a1aa;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.aiValue {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  background: rgba(26, 25, 25, 0.45);
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+}
+
+.modalSheet {
+  background: #ffffff;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  max-height: 92%;
+  box-shadow: 0 8px 20px rgba(26, 25, 25, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.modalTitle {
+  color: #1a1919;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.modalClose {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.modalScroll {
+  padding: 20px;
+  padding-bottom: 32px;
+  overflow-y: auto;
+}

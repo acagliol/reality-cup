@@ -109,23 +109,11 @@ export const theme = {
     full: 999,
   },
   shadow: {
-    sm: {
-      shadowColor: ramp.black,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.06,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    md: {
-      shadowColor: ramp.black,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.08,
-      shadowRadius: 20,
-      elevation: 4,
-    },
+    sm: '0 1px 4px rgba(26, 25, 25, 0.06)',
+    md: '0 8px 20px rgba(26, 25, 25, 0.08)',
   },
   font: {
-    mono: 'monospace' as const,
+    mono: 'var(--font-geist-mono), ui-monospace, monospace',
   },
 };
 

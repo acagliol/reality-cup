@@ -1,0 +1,255 @@
+.container {
+  flex: 1;
+  min-height: 100%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.topSection {
+  flex-shrink: 0;
+  padding: 56px 20px 0;
+}
+
+.imageSection {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottomPanel {
+  flex-shrink: 0;
+  padding: 12px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e4e4e7;
+  background: #ffffff;
+}
+
+.centered {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.screenTitle {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #52525b;
+  margin: 0 0 12px;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.questionLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #a1a1aa;
+  letter-spacing: 0.8px;
+}
+
+.questionCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1919;
+}
+
+.progressBars {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #e4e4e7;
+}
+
+.progressBarDone {
+  background: #e4ff1a;
+}
+
+.progressBarActive {
+  background: #e4ff1a;
+  height: 5px;
+}
+
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.categoryBadge {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7ffde;
+  border-radius: 16px;
+  padding: 8px 12px;
+  border: 1px solid #e4e4e7;
+  min-width: 0;
+}
+
+.categoryIcon {
+  font-size: 22px;
+}
+
+.categoryTextWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryName {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a1919;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1aa;
+  margin-top: 2px;
+}
+
+.imageFrame {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid #e4e4e7;
+  min-height: 220px;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  position: relative;
+  flex: 1;
+}
+
+.imageLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f4f4f5;
+  gap: 8px;
+  z-index: 1;
+}
+
+.imageLoadingText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #a1a1aa;
+}
+
+.image {
+  height: 220px;
+  width: 100%;
+  object-fit: contain;
+  background: #f4f4f5;
+  display: block;
+}
+
+.questionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.questionText {
+  flex: 1;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1919;
+  line-height: 28px;
+}
+
+.oddsBox {
+  background: #e4ff1a;
+  border-radius: 16px;
+  padding: 8px 12px;
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+}
+
+.oddsLabel {
+  font-size: 9px;
+  font-weight: 800;
+  color: #1a1919;
+  letter-spacing: 0.8px;
+}
+
+.oddsValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.confirmBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #e4ff1a;
+  border-radius: 999px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+}
+
+.confirmBtnDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirmText {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.confirmArrow {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1919;
+}
+
+.timerHint {
+  text-align: center;
+  font-size: 12px;
+  color: #a1a1aa;
+  line-height: 18px;
+  margin: 0;
+}
+
+.error {
+  color: #dc2626;
+  text-align: center;
+  margin: 0 0 12px;
+  font-size: 14px;
+}

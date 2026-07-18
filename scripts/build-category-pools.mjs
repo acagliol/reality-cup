@@ -142,6 +142,36 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const MEME_URL_HINTS = [
+  'meme',
+  'doge',
+  'grumpy',
+  'pepe',
+  'wojak',
+  'lolcat',
+  'nyan',
+  'keyboard_cat',
+  'keyboard-cat',
+  'success_kid',
+  'success-kid',
+  'distracted',
+  'pikachu',
+  'spongebob',
+  'brain',
+  'reaction',
+  'macro',
+  'viral',
+  'shiba',
+  'tardar',
+  'rickroll',
+  'this_is_fine',
+];
+
+function isMemeLikeUrl(url) {
+  const lower = decodeURIComponent(url).toLowerCase();
+  return MEME_URL_HINTS.some((hint) => lower.includes(hint));
+}
+
 async function main() {
   const flags = parseArgs(process.argv);
   const perSide = Number(flags['per-side'] ?? DEFAULT_PER_SIDE);

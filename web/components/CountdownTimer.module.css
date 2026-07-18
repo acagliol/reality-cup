@@ -1,0 +1,77 @@
+.clockWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clockFace {
+  width: 76px;
+  height: 76px;
+  border-radius: 38px;
+  border: 2px solid #e4e4e7;
+  background: #ffffff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clockFaceUrgent {
+  border-color: #dc2626;
+  background: #fee2e2;
+}
+
+.tick {
+  position: absolute;
+  width: 3px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.centerDisc {
+  width: 46px;
+  height: 46px;
+  border-radius: 23px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e4e4e7;
+}
+
+.clockTime {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1919;
+  line-height: 24px;
+}
+
+.clockUnit {
+  font-size: 9px;
+  font-weight: 700;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-top: -1px;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+}
+
+.inlineTime {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.urgent {
+  color: #dc2626;
+}
+
+.urgentMuted {
+  color: #dc2626;
+  opacity: 0.75;
+}

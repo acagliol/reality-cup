@@ -1,0 +1,178 @@
+.container {
+  flex: 1;
+  min-height: 0;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.trophyButton {
+  display: flex;
+  align-items: center;
+  margin: 0 20px 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  text-align: left;
+  width: calc(100% - 40px);
+}
+
+.trophyIcon {
+  font-size: 32px;
+  margin-right: 12px;
+}
+
+.trophyBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.trophyTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
+.trophySub {
+  font-size: 13px;
+  color: #a1a1aa;
+  margin-top: 2px;
+}
+
+.trophyChevron {
+  font-size: 18px;
+  color: #52525b;
+  font-weight: 700;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 16px;
+}
+
+.statBox {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #e4e4e7;
+}
+
+.statBoxHighlight {
+  background: #f7ffde;
+  border-color: #e4ff1a;
+}
+
+.statNum {
+  color: #1a1919;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.statLabel {
+  color: #a1a1aa;
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.section {
+  margin: 0 0 8px;
+  color: #1a1919;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 0 20px;
+}
+
+.list {
+  padding: 0 20px 24px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 8px;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 1px 4px rgba(26, 25, 25, 0.06);
+  text-align: left;
+  width: 100%;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.openBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.openDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #a1a1aa;
+}
+
+.openText {
+  font-size: 10px;
+  font-weight: 800;
+  color: #a1a1aa;
+  letter-spacing: 0.5px;
+}
+
+.editLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: #52525b;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  color: #1a1919;
+  font-weight: 700;
+  font-size: 15px;
+  flex: 1;
+  text-align: left;
+}
+
+.score {
+  color: #1a1919;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.cardMeta {
+  display: block;
+  color: #a1a1aa;
+  font-size: 12px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.empty {
+  margin: 24px 0 0;
+  color: #a1a1aa;
+  text-align: center;
+}
