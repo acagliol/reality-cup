@@ -15,8 +15,6 @@ export function ProbabilitySlider({
   disabled,
   showOddsBox = true,
 }: ProbabilitySliderProps) {
-  const fillPct = ((value - 1) / 98) * 100;
-
   return (
     <div className={styles.container}>
       {showOddsBox && (
@@ -26,10 +24,19 @@ export function ProbabilitySlider({
         </div>
       )}
 
-      <div className={styles.sliderWrap}>
-        <div className={styles.trackBg}>
-          <div className={styles.trackFill} style={{ width: `${fillPct}%` }} />
+      <div className={styles.endpointLabels}>
+        <div className={styles.endpointLeft}>
+          <span className={`${styles.endpointDot} ${styles.realDot}`} />
+          <span className={styles.realLabel}>Real</span>
         </div>
+        <div className={styles.endpointRight}>
+          <span className={styles.fakeLabel}>Fake</span>
+          <span className={`${styles.endpointDot} ${styles.fakeDot}`} />
+        </div>
+      </div>
+
+      <div className={styles.sliderWrap}>
+        <div className={styles.trackBg} />
         <input
           type="range"
           className={styles.slider}
@@ -43,9 +50,9 @@ export function ProbabilitySlider({
       </div>
 
       <div className={styles.scale}>
-        <span className={`${styles.scaleLabel} mono`}>0%</span>
-        <span className={styles.scaleMid}>Real ← → Fake</span>
-        <span className={`${styles.scaleLabel} mono`}>100%</span>
+        <span className={styles.realHint}>← more real</span>
+        <span className={`${styles.scaleValue} mono`}>{value}% fake</span>
+        <span className={styles.fakeHint}>more fake →</span>
       </div>
     </div>
   );

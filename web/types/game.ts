@@ -86,7 +86,7 @@ export interface TrophyEntry {
   gamesPlayed: number;
 }
 
-export type TabId = 'games' | 'profile';
+export type TabId = 'games' | 'insights' | 'profile';
 
 export type Screen =
   | { name: 'tabs' }

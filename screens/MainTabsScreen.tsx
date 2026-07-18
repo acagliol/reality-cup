@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { TabBar } from '../components/TabBar';
 import { useApp } from '../context/AppContext';
 import { GamesScreen } from './GamesScreen';
+import { InsightsScreen } from './InsightsScreen';
 import { ProfileScreen } from './ProfileScreen';
 import { theme } from '../lib/theme';
 
@@ -11,7 +12,9 @@ export function MainTabsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {activeTab === 'games' ? <GamesScreen /> : <ProfileScreen />}
+        {activeTab === 'games' && <GamesScreen />}
+        {activeTab === 'insights' && <InsightsScreen />}
+        {activeTab === 'profile' && <ProfileScreen />}
       </View>
       <TabBar activeTab={activeTab} onChange={setActiveTab} />
     </View>

@@ -9,6 +9,7 @@ interface TabBarProps {
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'games', label: 'Markets' },
+  { id: 'insights', label: 'Insights' },
   { id: 'profile', label: 'Profile' },
 ];
 
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   label: {
     color: theme.colors.textMuted,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   labelActive: {
     color: theme.colors.accentText,

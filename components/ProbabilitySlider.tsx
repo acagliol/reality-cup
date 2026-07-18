@@ -9,14 +9,15 @@ interface ProbabilitySliderProps {
   showOddsBox?: boolean;
 }
 
+const REAL_COLOR = theme.colors.success;
+const FAKE_COLOR = theme.colors.text;
+
 export function ProbabilitySlider({
   value,
   onChange,
   disabled,
   showOddsBox = true,
 }: ProbabilitySliderProps) {
-  const fillPct = ((value - 1) / 98) * 100;
-
   return (
     <View style={styles.container}>
       {showOddsBox && (
@@ -26,9 +27,21 @@ export function ProbabilitySlider({
         </View>
       )}
 
+      <View style={styles.endpointLabels}>
+        <View style={styles.endpointLeft}>
+          <View style={[styles.endpointDot, { backgroundColor: REAL_COLOR }]} />
+          <Text style={[styles.endpointText, { color: REAL_COLOR }]}>Real</Text>
+        </View>
+        <View style={styles.endpointRight}>
+          <Text style={[styles.endpointText, { color: FAKE_COLOR }]}>Fake</Text>
+          <View style={[styles.endpointDot, { backgroundColor: FAKE_COLOR }]} />
+        </View>
+      </View>
+
       <View style={styles.sliderWrap}>
         <View style={styles.trackBg}>
-          <View style={[styles.trackFill, { width: `${fillPct}%` }]} />
+          <View style={styles.trackReal} />
+          <View style={styles.trackFake} />
         </View>
         <Slider
           style={styles.slider}
@@ -45,9 +58,9 @@ export function ProbabilitySlider({
       </View>
 
       <View style={styles.scale}>
-        <Text style={styles.scaleLabel}>0%</Text>
-        <Text style={styles.scaleMid}>Real ← → Fake</Text>
-        <Text style={styles.scaleLabel}>100%</Text>
+        <Text style={[styles.scaleHint, { color: REAL_COLOR }]}>← more real</Text>
+        <Text style={styles.scaleValue}>{value}% fake</Text>
+        <Text style={[styles.scaleHint, { color: FAKE_COLOR }]}>more fake →</Text>
       </View>
     </View>
   );
@@ -55,7 +68,7 @@ export function ProbabilitySlider({
 
 const styles = StyleSheet.create({
   container: {
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   oddsBox: {
     alignSelf: 'flex-end',
@@ -81,6 +94,31 @@ const styles = StyleSheet.create({
     fontFamily: theme.font.mono,
     marginTop: 2,
   },
+  endpointLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  endpointLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  endpointRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  endpointDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  endpointText: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
   sliderWrap: {
     position: 'relative',
     height: 44,
@@ -90,15 +128,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 8,
+    height: 10,
     borderRadius: theme.radius.full,
-    backgroundColor: theme.colors.sliderTrack,
     overflow: 'hidden',
+    flexDirection: 'row',
   },
-  trackFill: {
-    height: '100%',
-    backgroundColor: theme.colors.sliderFill,
-    borderRadius: theme.radius.full,
+  trackReal: {
+    flex: 1,
+    backgroundColor: REAL_COLOR,
+  },
+  trackFake: {
+    flex: 1,
+    backgroundColor: FAKE_COLOR,
   },
   slider: {
     width: '100%',
@@ -109,18 +150,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  scaleLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    fontVariant: ['tabular-nums'],
-  },
-  scaleMid: {
+  scaleHint: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  scaleValue: {
+    fontSize: 12,
+    fontWeight: '700',
     color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    fontVariant: ['tabular-nums'],
   },
 });
 

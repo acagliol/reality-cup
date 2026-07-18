@@ -5,12 +5,18 @@ export const PER_SIDE = 50;
 export const TRUTH_REAL = 5;
 export const TRUTH_FAKE = 95;
 
+/** Shown on category cards and detail screens — gameplay only, not theme copy. */
+export const HOW_TO_PLAY =
+  '10 rounds, 10 seconds each. Slide to set the odds each image is AI-generated, then tap Confirm.';
+
+export const RANDOM_HOW_TO_PLAY =
+  '10 rounds pulled from every category. Slide your odds each image is AI-generated, then tap Confirm before time runs out.';
+
 export const GAME_CATEGORIES = [
   {
     id: 'cat-world-cup',
     name: 'World Cup',
-    description:
-      'Global football fever — real match photos vs AI-generated tournament scenes.',
+    description: HOW_TO_PLAY,
     icon: '⚽',
     sortOrder: 1,
     realQueries: [
@@ -26,8 +32,7 @@ export const GAME_CATEGORIES = [
   {
     id: 'cat-lebron-decision',
     name: 'LeBron / The Decision',
-    description:
-      'NBA icon energy and ESPN press-conference vibes — spot the synthetic hoop dreams.',
+    description: HOW_TO_PLAY,
     icon: '🏀',
     sortOrder: 2,
     realQueries: ['LeBron James basketball', 'NBA basketball game arena', 'basketball player dunk'],
@@ -37,8 +42,7 @@ export const GAME_CATEGORIES = [
   {
     id: 'cat-brain-rot',
     name: 'Brain Rot',
-    description:
-      'Chronically online aesthetics — meme-tier visuals vs uncanny AI slop.',
+    description: HOW_TO_PLAY,
     icon: '🧠',
     sortOrder: 3,
     realQueries: [
@@ -61,8 +65,7 @@ export const GAME_CATEGORIES = [
   {
     id: 'cat-nyc-core',
     name: 'NYC Core',
-    description:
-      'Skyline, streets, landmarks, and city life — authentic NYC or AI cosplay?',
+    description: HOW_TO_PLAY,
     icon: '🗽',
     sortOrder: 4,
     realQueries: [
@@ -81,8 +84,7 @@ export const GAME_CATEGORIES = [
   {
     id: 'cat-food',
     name: 'Food',
-    description:
-      'Plated perfection and greasy glory — can you taste the difference in the pixels?',
+    description: HOW_TO_PLAY,
     icon: '🍕',
     sortOrder: 5,
     realQueries: ['gourmet food plate', 'restaurant dish photography', 'pizza burger sushi meal'],
@@ -103,8 +105,7 @@ export const LEGACY_CATEGORY_IDS = [
 export const RANDOM_CATEGORY = {
   id: 'cat-random',
   name: 'Random Mix',
-  description:
-    'A shuffled blend of AI fakes from every category — spot the synthetic across themes.',
+  description: RANDOM_HOW_TO_PLAY,
   icon: '🎲',
   sortOrder: 0,
 };

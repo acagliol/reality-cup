@@ -17,7 +17,7 @@ export const SPONSOR_AI_MODELS = [
     provider: 'Anthropic',
     version: '4.0',
     sponsor: 'Cursor',
-    openrouterModel: 'anthropic/claude-3.5-sonnet',
+    openrouterModel: 'anthropic/claude-sonnet-4.6',
   },
   {
     id: 'cursor-gemini-flash',
@@ -25,7 +25,7 @@ export const SPONSOR_AI_MODELS = [
     provider: 'Google',
     version: '2.0',
     sponsor: 'Cursor',
-    openrouterModel: 'google/gemini-2.0-flash-001',
+    openrouterModel: 'google/gemini-2.5-flash',
   },
 ];
 

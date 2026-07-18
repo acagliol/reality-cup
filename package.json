@@ -36,6 +36,7 @@
     "pools:seed:fakes": "node --env-file=.env.local scripts/seed-launch-fakes.mjs --zip-path \"C:/Users/anayp/Downloads/all_images.zip\"",
     "pools:remove-reals": "node --env-file=.env.local scripts/remove-real-images.mjs",
     "pools:seed:random": "node --env-file=.env.local scripts/seed-random-category.mjs",
+    "pools:seed:descriptions": "node --env-file=.env.local scripts/seed-category-descriptions.mjs",
     "pools:sql": "node scripts/generate-category-seed-sql.mjs",
     "web:dev": "npm run dev --prefix web",
     "web:build": "npm run build --prefix web",

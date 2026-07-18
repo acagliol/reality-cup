@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .oddsBox {
@@ -30,6 +30,46 @@
   margin-top: 2px;
 }
 
+.endpointLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.endpointLeft,
+.endpointRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.endpointDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.realDot {
+  background: #16a34a;
+}
+
+.fakeDot {
+  background: #1a1919;
+}
+
+.realLabel {
+  font-size: 15px;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.fakeLabel {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1919;
+}
+
 .sliderWrap {
   position: relative;
   height: 44px;
@@ -41,16 +81,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 8px;
+  height: 10px;
   border-radius: 999px;
-  background: #e4e4e7;
-  overflow: hidden;
-}
-
-.trackFill {
-  height: 100%;
-  background: #e4ff1a;
-  border-radius: 999px;
+  background: linear-gradient(to right, #16a34a 0%, #16a34a 50%, #1a1919 50%, #1a1919 100%);
 }
 
 .slider {
@@ -70,7 +103,7 @@
 }
 
 .slider::-webkit-slider-runnable-track {
-  height: 8px;
+  height: 10px;
   background: transparent;
 }
 
@@ -81,13 +114,13 @@
   height: 24px;
   border-radius: 50%;
   background: #ffffff;
-  border: 2px solid #e4e4e7;
+  border: 2px solid #52525b;
   box-shadow: 0 1px 4px rgba(26, 25, 25, 0.12);
-  margin-top: -8px;
+  margin-top: -7px;
 }
 
 .slider::-moz-range-track {
-  height: 8px;
+  height: 10px;
   background: transparent;
   border: none;
 }
@@ -97,7 +130,7 @@
   height: 24px;
   border-radius: 50%;
   background: #ffffff;
-  border: 2px solid #e4e4e7;
+  border: 2px solid #52525b;
   box-shadow: 0 1px 4px rgba(26, 25, 25, 0.12);
 }
 
@@ -107,16 +140,20 @@
   align-items: center;
 }
 
-.scaleLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: #a1a1aa;
+.realHint {
+  font-size: 11px;
+  font-weight: 700;
+  color: #16a34a;
 }
 
-.scaleMid {
+.fakeHint {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  color: #1a1919;
+}
+
+.scaleValue {
+  font-size: 12px;
+  font-weight: 700;
   color: #52525b;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
 }

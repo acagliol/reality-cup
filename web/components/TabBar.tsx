@@ -10,6 +10,7 @@ interface TabBarProps {
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'games', label: 'Markets' },
+  { id: 'insights', label: 'Insights' },
   { id: 'profile', label: 'Profile' },
 ];
 
