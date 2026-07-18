@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react';
 import { loadGameHistory } from '../lib/storage/gameHistoryStorage';
 import { getPlayerName, savePlayerName } from '../lib/storage/playerStorage';
+import { syncProfile } from '../lib/services/gameService';
 import type { GameSession, Screen, TabId } from '../types/game';
 
 interface AppContextValue {
@@ -18,6 +19,7 @@ interface AppContextValue {
   saveName: (name: string) => Promise<void>;
   setActiveGame: (game: GameSession | null) => void;
   refreshHistory: () => Promise<void>;
+  abandonActiveGame: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -59,9 +61,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveGame(null);
   }, []);
 
+  const abandonActiveGame = useCallback(() => {
+    setActiveGame(null);
+  }, []);
+
   const saveName = useCallback(async (name: string) => {
     await savePlayerName(name);
     setPlayerName(name.trim());
+    await syncProfile(name.trim());
   }, []);
 
   const value = useMemo(
@@ -79,6 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveName,
       setActiveGame,
       refreshHistory,
+      abandonActiveGame,
     }),
     [
       playerName,
@@ -92,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetToTabs,
       saveName,
       refreshHistory,
+      abandonActiveGame,
     ],
   );
 

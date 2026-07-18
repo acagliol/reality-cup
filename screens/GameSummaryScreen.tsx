@@ -1,101 +1,115 @@
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LeaderboardList, LeaderboardLoading } from '../components/LeaderboardList';
 import { RoundBreakdown } from '../components/RoundBreakdown';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
-import { getLeaderboard } from '../lib/services/gameService';
+import { fetchCategoryLeaderboard } from '../lib/services/leaderboardService';
 import { theme } from '../lib/theme';
+import type { CategoryLeaderboard } from '../types/game';
 
 interface GameSummaryScreenProps {
   gameId: string;
 }
 
 export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
-  const { activeGame, goBack, resetToTabs } = useApp();
-  const game = activeGame?.id === gameId ? activeGame : null;
+  const cat = useCategoryTheme();
+  const { activeGame, goBack, resetToTabs, gameHistory } = useApp();
+  const game =
+    activeGame?.id === gameId ? activeGame : gameHistory.find((g) => g.id === gameId) ?? null;
+
+  const [leaderboard, setLeaderboard] = useState<CategoryLeaderboard | null>(null);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+
+  useEffect(() => {
+    if (!game) return;
+    (async () => {
+      setLeaderboardLoading(true);
+      try {
+        const data = await fetchCategoryLeaderboard(
+          game.categoryId,
+          game.playerName,
+          game.totalScore,
+        );
+        setLeaderboard(data);
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    })();
+  }, [game]);
 
   if (!game) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Summary" onBack={goBack} />
+        <ScreenHeader title="Results" onBack={goBack} />
       </View>
     );
   }
 
-  const leaderboard = getLeaderboard(game);
-  const playerEntry = leaderboard.find((e) => e.isCurrentPlayer);
+  const pinned = leaderboard?.pinnedPlayerEntry;
+  const topPlayer = leaderboard?.topEntries.find((e) => e.isCurrentPlayer);
+  const playerRank = topPlayer?.rank ?? pinned?.rank;
   const avgScore = Math.round(game.totalScore / game.rounds.length);
-  const bestRound = game.rounds.reduce(
-    (best, r) =>
-      (r.playerAnswer?.roundScore ?? 0) > (best.playerAnswer?.roundScore ?? 0) ? r : best,
-    game.rounds[0],
-  );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cat.heroBg }]}>
       <ScreenHeader
-        title="Game Complete!"
-        subtitle={`${game.categoryName} · ${game.totalScore} total points`}
+        title="Session complete"
+        subtitle={`${game.categoryName} · ${game.totalScore} pts`}
         onBack={goBack}
+        accentColor={cat.primary}
       />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{game.totalScore}</Text>
-            <Text style={styles.statLabel}>Total Score</Text>
+          <View style={[styles.stat, { borderColor: cat.primaryMuted }]}>
+            <Text style={[styles.statValue, { color: cat.primary }]}>{game.totalScore}</Text>
+            <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{avgScore}</Text>
-            <Text style={styles.statLabel}>Avg / Round</Text>
+            <Text style={styles.statLabel}>Avg / round</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>#{playerEntry?.rank ?? '—'}</Text>
+            <Text style={[styles.statValue, { color: cat.primary }]}>
+              #{playerRank ?? '—'}
+            </Text>
             <Text style={styles.statLabel}>Rank</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Round Breakdown</Text>
-        <Text style={styles.sectionHint}>Tap a round to expand details, or open full view</Text>
+        <Text style={styles.sectionTitle}>Forecast breakdown</Text>
+        <Text style={styles.sectionHint}>Expand each round or tap ↗ for full view</Text>
         {game.rounds.map((round) => (
-          <RoundBreakdown key={round.roundContentId} round={round} />
+          <RoundBreakdown
+            key={round.roundContentId}
+            round={round}
+            categoryId={game.categoryId}
+          />
         ))}
 
-        <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Best Round</Text>
-        <View style={styles.bestCard}>
-          <Text style={styles.bestText}>
-            Round {bestRound.roundNumber}: {bestRound.playerAnswer?.roundScore ?? 0} pts
-          </Text>
-        </View>
+        <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Leaderboard · Top 10</Text>
+        {leaderboardLoading || !leaderboard ? (
+          <LeaderboardLoading />
+        ) : (
+          <LeaderboardList data={leaderboard} compact />
+        )}
 
-        <Text style={styles.sectionTitle}>Leaderboard</Text>
-        {leaderboard.map((entry) => (
-          <View
-            key={`${entry.rank}-${entry.playerName}`}
-            style={[styles.leaderRow, entry.isCurrentPlayer && styles.leaderRowHighlight]}
-          >
-            <Text style={styles.rank}>#{entry.rank}</Text>
-            <Text style={[styles.name, entry.isCurrentPlayer && styles.nameHighlight]}>
-              {entry.playerName}
-              {entry.isCurrentPlayer ? ' (you)' : ''}
-            </Text>
-            <Text style={styles.score}>{entry.score}</Text>
-          </View>
-        ))}
-
-        <Pressable style={styles.button} onPress={resetToTabs}>
-          <Text style={styles.buttonText}>Back to Menu</Text>
+        <Pressable
+          style={[styles.button, { backgroundColor: cat.primary }]}
+          onPress={resetToTabs}
+        >
+          <Text style={styles.buttonText}>Back to markets</Text>
         </Pressable>
       </ScrollView>
     </View>
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: c.bg,
   },
   scroll: {
     paddingHorizontal: theme.spacing.xl,
@@ -108,90 +122,54 @@ const styles = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    backgroundColor: c.surface,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
     padding: theme.spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
     ...theme.shadow.sm,
   },
   statValue: {
-    color: c.accent,
     fontSize: 24,
     fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+    fontFamily: theme.font.mono,
+    color: theme.colors.text,
   },
   statLabel: {
-    color: c.textMuted,
-    fontSize: 12,
+    color: theme.colors.textMuted,
+    fontSize: 11,
     marginTop: 4,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   sectionTitle: {
-    color: c.text,
-    fontSize: 18,
-    fontWeight: '700',
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '800',
     marginBottom: theme.spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   sectionHint: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 13,
     marginBottom: theme.spacing.lg,
   },
   sectionSpaced: {
     marginTop: theme.spacing.xxl,
   },
-  bestCard: {
-    backgroundColor: c.accentMuted,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.xxl,
-  },
-  bestText: {
-    color: c.text,
-    fontWeight: '600',
-  },
-  leaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: c.surface,
-    borderRadius: theme.radius.sm,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    borderWidth: 1,
-    borderColor: c.border,
-  },
-  leaderRowHighlight: {
-    borderColor: c.accent,
-    backgroundColor: c.accentMuted,
-  },
-  rank: {
-    color: c.textMuted,
-    width: 36,
-    fontWeight: '700',
-  },
-  name: {
-    flex: 1,
-    color: c.text,
-    fontWeight: '600',
-  },
-  nameHighlight: {
-    color: c.accent,
-  },
-  score: {
-    color: c.warning,
-    fontWeight: '800',
-    fontSize: 16,
-  },
   button: {
     marginTop: theme.spacing.lg,
-    backgroundColor: c.accent,
     borderRadius: theme.radius.lg,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
     ...theme.shadow.sm,
   },
   buttonText: {
-    color: c.white,
+    color: theme.colors.textInverse,
     fontWeight: '800',
     fontSize: 17,
   },

@@ -5,23 +5,25 @@ interface ScreenHeaderProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  accentColor?: string;
 }
 
-export function ScreenHeader({ title, subtitle, onBack }: ScreenHeaderProps) {
+export function ScreenHeader({ title, subtitle, onBack, accentColor }: ScreenHeaderProps) {
+  const accent = accentColor ?? theme.colors.text;
+
   return (
     <View style={styles.container}>
       {onBack && (
         <Pressable onPress={onBack} style={styles.back}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={[styles.backText, { color: accent }]}>← Back</Text>
         </Pressable>
       )}
+      <Text style={styles.eyebrow}>Probability Cup</Text>
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
     </View>
   );
 }
-
-const c = theme.colors;
 
 const styles = StyleSheet.create({
   container: {
@@ -33,19 +35,26 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   backText: {
-    color: c.accent,
     fontSize: 15,
     fontWeight: '600',
   },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 4,
+  },
   title: {
-    color: c.text,
-    fontSize: 28,
+    color: theme.colors.text,
+    fontSize: 26,
     fontWeight: '800',
   },
   subtitle: {
-    color: c.textMuted,
-    fontSize: 15,
+    color: theme.colors.textMuted,
+    fontSize: 14,
     marginTop: 6,
-    lineHeight: 22,
+    lineHeight: 20,
   },
 });

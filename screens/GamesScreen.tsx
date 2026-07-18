@@ -3,7 +3,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { TabBar } from '../components/TabBar';
 import { useApp } from '../context/AppContext';
 import { MOCK_CATEGORIES } from '../lib/mock/data';
-import { theme } from '../lib/theme';
+import { getCategoryTheme, theme } from '../lib/theme';
 
 export function GamesScreen() {
   const { playerName, activeTab, setActiveTab, navigate } = useApp();
@@ -11,8 +11,8 @@ export function GamesScreen() {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title="Real or Fake?"
-        subtitle={`Hey ${playerName ?? 'player'} — pick a category and test your eye.`}
+        title="Forecast Markets"
+        subtitle={`${playerName ?? 'Analyst'} — calibrate your eye against AI.`}
       />
 
       <TabBar activeTab={activeTab} onChange={setActiveTab} />
@@ -21,32 +21,36 @@ export function GamesScreen() {
         data={MOCK_CATEGORIES}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.card}
-            onPress={() => navigate({ name: 'category-detail', categoryId: item.id })}
-          >
-            <Text style={styles.icon}>{item.icon}</Text>
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardDesc} numberOfLines={2}>
-                {item.description}
-              </Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const cat = getCategoryTheme(item.id);
+          return (
+            <Pressable
+              style={[styles.card, { borderLeftColor: cat.primary, backgroundColor: cat.heroBg }]}
+              onPress={() => navigate({ name: 'category-detail', categoryId: item.id })}
+            >
+              <View style={[styles.iconWrap, { backgroundColor: cat.primaryMuted }]}>
+                <Text style={styles.icon}>{item.icon}</Text>
+              </View>
+              <View style={styles.cardBody}>
+                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={styles.cardDesc} numberOfLines={2}>
+                  {item.description}
+                </Text>
+                <Text style={[styles.cardTag, { color: cat.primary }]}>10 forecasts · 10s window</Text>
+              </View>
+              <Text style={[styles.chevron, { color: cat.primary }]}>›</Text>
+            </Pressable>
+          );
+        }}
       />
     </View>
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: c.bg,
+    backgroundColor: theme.colors.bg,
   },
   list: {
     paddingHorizontal: theme.spacing.xl,
@@ -56,33 +60,46 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: c.surface,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
+    borderLeftWidth: 4,
     gap: theme.spacing.md,
     ...theme.shadow.sm,
   },
+  iconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: theme.radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   icon: {
-    fontSize: 32,
+    fontSize: 28,
   },
   cardBody: {
     flex: 1,
   },
   cardTitle: {
-    color: c.text,
-    fontSize: 17,
-    fontWeight: '700',
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '800',
     marginBottom: 4,
   },
   cardDesc: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
+  cardTag: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   chevron: {
-    color: c.textMuted,
     fontSize: 28,
     fontWeight: '300',
   },

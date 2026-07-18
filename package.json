@@ -21,7 +21,12 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "verify:scoring": "node scripts/verify-scoring.mjs",
+    "ai:seed-models": "node --env-file=.env.local scripts/score-ai-answers.mjs seed-models",
+    "ai:seed-content": "node --env-file=.env.local scripts/score-ai-answers.mjs seed-content",
+    "ai:score-mock": "node --env-file=.env.local scripts/score-ai-answers.mjs score --mock",
+    "ai:score-live": "node --env-file=.env.local scripts/score-ai-answers.mjs score --live"
   },
   "private": true
 }

@@ -25,12 +25,13 @@ export function NameModal({ visible, onSave }: NameModalProps) {
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>Welcome!</Text>
-          <Text style={styles.subtitle}>Fill in your name to get started.</Text>
+          <Text style={styles.eyebrow}>Probability Cup</Text>
+          <Text style={styles.title}>Enter your analyst name</Text>
+          <Text style={styles.subtitle}>Used on leaderboards and session history.</Text>
 
           <TextInput
             style={styles.input}
-            placeholder="Your display name"
+            placeholder="Display name"
             placeholderTextColor={theme.colors.textMuted}
             value={name}
             onChangeText={(text) => {
@@ -45,7 +46,7 @@ export function NameModal({ visible, onSave }: NameModalProps) {
           {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable style={styles.button} onPress={handleSave}>
-            <Text style={styles.buttonText}>Save & Continue</Text>
+            <Text style={styles.buttonText}>Continue</Text>
           </Pressable>
         </View>
       </View>
@@ -53,58 +54,64 @@ export function NameModal({ visible, onSave }: NameModalProps) {
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: c.overlay,
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'center',
     padding: theme.spacing.xxl,
   },
   card: {
-    backgroundColor: c.surface,
-    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.xl,
     padding: theme.spacing.xxl,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
     ...theme.shadow.md,
   },
-  title: {
-    color: c.text,
-    fontSize: 24,
+  eyebrow: {
+    fontSize: 11,
     fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: theme.spacing.sm,
+  },
+  title: {
+    color: theme.colors.text,
+    fontSize: 22,
+    fontWeight: '800',
     marginBottom: theme.spacing.sm,
   },
   subtitle: {
-    color: c.textMuted,
-    fontSize: 15,
+    color: theme.colors.textMuted,
+    fontSize: 14,
     marginBottom: theme.spacing.xl,
   },
   input: {
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.sm,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
-    color: c.text,
+    color: theme.colors.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
   },
   error: {
-    color: c.danger,
+    color: theme.colors.danger,
     marginTop: theme.spacing.sm,
     fontSize: 14,
   },
   button: {
     marginTop: theme.spacing.xl,
-    backgroundColor: c.accent,
+    backgroundColor: theme.colors.text,
     borderRadius: theme.radius.sm,
     paddingVertical: theme.spacing.md,
     alignItems: 'center',
   },
   buttonText: {
-    color: c.white,
+    color: theme.colors.textInverse,
     fontWeight: '700',
     fontSize: 16,
   },

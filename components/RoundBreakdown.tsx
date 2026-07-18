@@ -1,22 +1,25 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ComparisonSlider } from './ComparisonSlider';
+import { ProbabilityTrack } from './ProbabilityTrack';
+import { CategoryThemeProvider } from '../context/CategoryThemeContext';
 import { getAiModelById } from '../lib/mock/data';
+import { formatModelSubtitle } from '../lib/ai/sponsorModels';
 import { formatMs } from '../lib/scoring';
-import { theme } from '../lib/theme';
+import { getCategoryTheme, theme } from '../lib/theme';
 import type { GameRound } from '../types/game';
 
 interface RoundBreakdownProps {
   round: GameRound;
+  categoryId: string;
 }
 
-function RoundDetailContent({ round }: { round: GameRound }) {
+function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryId: string }) {
+  const cat = getCategoryTheme(categoryId);
   const answer = round.playerAnswer;
-  const c = theme.colors;
 
   if (!answer) {
-    return <Text style={{ color: c.textMuted }}>Not played yet</Text>;
+    return <Text style={{ color: theme.colors.textMuted }}>Not played yet</Text>;
   }
 
   return (
@@ -24,44 +27,51 @@ function RoundDetailContent({ round }: { round: GameRound }) {
       <Image source={{ uri: round.imageUrl }} style={styles.image} contentFit="cover" />
 
       <View style={styles.scoreRow}>
-        <View style={styles.scorePill}>
+        <View style={[styles.scorePill, { backgroundColor: cat.primaryMuted }]}>
           <Text style={styles.scorePillLabel}>Accuracy</Text>
-          <Text style={styles.scorePillValue}>{answer.accuracyScore ?? '—'}</Text>
+          <Text style={[styles.scorePillValue, { color: cat.primary }]}>
+            {answer.accuracyScore ?? '—'}
+          </Text>
         </View>
         <View style={styles.scorePill}>
           <Text style={styles.scorePillLabel}>Speed</Text>
-          <Text style={styles.scorePillValue}>{answer.speedScore ?? '—'}</Text>
+          <Text style={styles.scorePillValue}>{answer.speedScore.toFixed(1)}</Text>
         </View>
-        <View style={[styles.scorePill, styles.scorePillTotal]}>
+        <View style={[styles.scorePill, { borderColor: cat.primary, borderWidth: 1 }]}>
           <Text style={styles.scorePillLabel}>Total</Text>
-          <Text style={styles.scorePillValueTotal}>{answer.roundScore}</Text>
+          <Text style={[styles.scorePillValue, { color: cat.primary }]}>{answer.roundScore}</Text>
         </View>
       </View>
 
-      <ComparisonSlider label="Your Answer" value={answer.answerValue} color={c.accentSoft} />
-      <ComparisonSlider
-        label="Crowd Answer"
+      <ProbabilityTrack label="Your forecast" value={answer.answerValue} highlight />
+      <ProbabilityTrack
+        label="Crowd consensus"
         value={round.crowdMean}
-        color={c.warning}
-        subtitle="Aggregated from all players"
+        color={theme.colors.warning}
+        subtitle="Aggregated player forecasts"
       />
 
       {round.aiAnswers.map((ai) => {
         const model = getAiModelById(ai.aiModelId);
         return (
-          <ComparisonSlider
+          <ProbabilityTrack
             key={ai.aiModelId}
             label={model?.name ?? ai.aiModelId}
             value={ai.answerValue}
-            color={c.success}
-            subtitle={model ? `${model.provider} · ${model.version}` : undefined}
+            color={theme.colors.success}
+            subtitle={model ? formatModelSubtitle(model) : undefined}
           />
         );
       })}
 
-      <ComparisonSlider label="Truth" value={round.truthValue} color={c.danger} />
+      <ProbabilityTrack
+        label="Ground truth"
+        value={round.truthValue}
+        color={theme.colors.danger}
+        highlight
+      />
 
-      <Text style={styles.aiTitle}>AI Models Used</Text>
+      <Text style={styles.aiTitle}>Model forecasts</Text>
       {round.aiAnswers.map((ai) => {
         const model = getAiModelById(ai.aiModelId);
         return (
@@ -69,10 +79,12 @@ function RoundDetailContent({ round }: { round: GameRound }) {
             <View style={styles.aiInfo}>
               <Text style={styles.aiName}>{model?.name ?? ai.aiModelId}</Text>
               <Text style={styles.aiProvider}>
-                {model?.provider} · v{model?.version}
+                {model ? formatModelSubtitle(model) : ai.aiModelId}
               </Text>
             </View>
-            <Text style={styles.aiValue}>{Math.round(ai.answerValue)}</Text>
+            <Text style={[styles.aiValue, { color: cat.primary }]}>
+              {Math.round(ai.answerValue)}%
+            </Text>
           </View>
         );
       })}
@@ -80,76 +92,79 @@ function RoundDetailContent({ round }: { round: GameRound }) {
   );
 }
 
-export function RoundBreakdown({ round }: RoundBreakdownProps) {
+export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
   const [expanded, setExpanded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const answer = round.playerAnswer;
-  const c = theme.colors;
+  const cat = getCategoryTheme(categoryId);
 
   return (
-    <View style={styles.card}>
-      <Pressable onPress={() => setExpanded((v) => !v)} style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.roundTitle}>Round {round.roundNumber}</Text>
-          {answer ? (
-            <Text style={styles.roundMeta}>
-              {answer.roundScore} pts · {formatMs(answer.responseTimeMs)}
-            </Text>
-          ) : (
-            <Text style={styles.roundMeta}>Not played</Text>
-          )}
-        </View>
-        <View style={styles.headerRight}>
-          {answer && (
-            <View style={styles.pointsBadge}>
-              <Text style={styles.pointsBadgeText}>{answer.roundScore}</Text>
-            </View>
-          )}
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            hitSlop={8}
-            style={styles.popupBtn}
-          >
-            <Text style={styles.popupBtnText}>↗</Text>
-          </Pressable>
-          <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
-        </View>
-      </Pressable>
-
-      {expanded && (
-        <View style={styles.body}>
-          <RoundDetailContent round={round} />
-        </View>
-      )}
-
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Round {round.roundNumber}</Text>
-              <Pressable onPress={() => setModalVisible(false)} hitSlop={12}>
-                <Text style={styles.modalClose}>Done</Text>
-              </Pressable>
-            </View>
-            <ScrollView contentContainerStyle={styles.modalScroll}>
-              <RoundDetailContent round={round} />
-            </ScrollView>
+    <CategoryThemeProvider categoryId={categoryId}>
+      <View style={[styles.card, { borderLeftColor: cat.primary }]}>
+        <Pressable onPress={() => setExpanded((v) => !v)} style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.roundTitle}>Round {round.roundNumber}</Text>
+            {answer ? (
+              <Text style={styles.roundMeta}>
+                {answer.roundScore} pts · {formatMs(answer.responseTimeMs)}
+              </Text>
+            ) : (
+              <Text style={styles.roundMeta}>Not played</Text>
+            )}
           </View>
-        </View>
-      </Modal>
-    </View>
+          <View style={styles.headerRight}>
+            {answer && (
+              <View style={[styles.pointsBadge, { backgroundColor: cat.primaryMuted }]}>
+                <Text style={[styles.pointsBadgeText, { color: cat.primary }]}>
+                  {answer.roundScore}
+                </Text>
+              </View>
+            )}
+            <Pressable
+              onPress={() => setModalVisible(true)}
+              hitSlop={8}
+              style={[styles.popupBtn, { borderColor: cat.primaryMuted }]}
+            >
+              <Text style={[styles.popupBtnText, { color: cat.primary }]}>↗</Text>
+            </Pressable>
+            <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
+          </View>
+        </Pressable>
+
+        {expanded && (
+          <View style={styles.body}>
+            <RoundDetailContent round={round} categoryId={categoryId} />
+          </View>
+        )}
+
+        <Modal visible={modalVisible} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalSheet}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Round {round.roundNumber}</Text>
+                <Pressable onPress={() => setModalVisible(false)} hitSlop={12}>
+                  <Text style={[styles.modalClose, { color: cat.primary }]}>Done</Text>
+                </Pressable>
+              </View>
+              <ScrollView contentContainerStyle={styles.modalScroll}>
+                <RoundDetailContent round={round} categoryId={categoryId} />
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </CategoryThemeProvider>
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: c.surface,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
+    borderLeftWidth: 4,
     overflow: 'hidden',
     ...theme.shadow.sm,
   },
@@ -166,43 +181,41 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   roundTitle: {
-    color: c.text,
+    color: theme.colors.text,
     fontWeight: '700',
     fontSize: 16,
   },
   roundMeta: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 12,
     marginTop: 2,
+    fontVariant: ['tabular-nums'],
   },
   pointsBadge: {
-    backgroundColor: c.accentMuted,
     borderRadius: theme.radius.full,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   pointsBadgeText: {
-    color: c.accent,
     fontWeight: '800',
     fontSize: 13,
+    fontVariant: ['tabular-nums'],
   },
   popupBtn: {
     width: 28,
     height: 28,
     borderRadius: theme.radius.sm,
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: c.border,
   },
   popupBtnText: {
-    color: c.accent,
     fontWeight: '700',
     fontSize: 14,
   },
   chevron: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 12,
     width: 16,
     textAlign: 'center',
@@ -211,13 +224,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: c.border,
+    borderTopColor: theme.colors.border,
   },
   image: {
     height: 160,
     borderRadius: theme.radius.sm,
     marginBottom: theme.spacing.md,
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   scoreRow: {
     flexDirection: 'row',
@@ -226,71 +239,68 @@ const styles = StyleSheet.create({
   },
   scorePill: {
     flex: 1,
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.sm,
     padding: theme.spacing.sm,
     alignItems: 'center',
   },
-  scorePillTotal: {
-    backgroundColor: c.accentMuted,
-  },
   scorePillLabel: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   scorePillValue: {
-    color: c.text,
+    color: theme.colors.text,
     fontWeight: '700',
     fontSize: 16,
     marginTop: 2,
-  },
-  scorePillValueTotal: {
-    color: c.accent,
-    fontWeight: '800',
-    fontSize: 16,
-    marginTop: 2,
+    fontVariant: ['tabular-nums'],
+    fontFamily: theme.font.mono,
   },
   aiTitle: {
-    color: c.text,
+    color: theme.colors.text,
     fontWeight: '700',
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   aiRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.sm,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
   },
   aiInfo: { flex: 1 },
   aiName: {
-    color: c.text,
+    color: theme.colors.text,
     fontWeight: '600',
     fontSize: 14,
   },
   aiProvider: {
-    color: c.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
   aiValue: {
-    color: c.success,
     fontWeight: '800',
     fontSize: 16,
+    fontVariant: ['tabular-nums'],
+    fontFamily: theme.font.mono,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: c.overlay,
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: c.surface,
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: theme.radius.xl,
     borderTopRightRadius: theme.radius.xl,
     maxHeight: '92%',
@@ -302,15 +312,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: theme.spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: c.border,
+    borderBottomColor: theme.colors.border,
   },
   modalTitle: {
-    color: c.text,
+    color: theme.colors.text,
     fontSize: 18,
     fontWeight: '800',
   },
   modalClose: {
-    color: c.accent,
     fontWeight: '700',
     fontSize: 16,
   },

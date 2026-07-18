@@ -1,239 +1,251 @@
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { GameSlider } from '../components/GameSlider';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { CountdownTimer } from '../components/CountdownTimer';
+import { ProbabilitySlider } from '../components/ProbabilitySlider';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
 import { completeGame, submitRoundAnswer } from '../lib/services/gameService';
-import { formatCountdown } from '../lib/scoring';
 import { theme } from '../lib/theme';
 import { ROUND_TIME_MS } from '../types/game';
 
+type Phase = 'playing' | 'locking' | 'submitting';
+
 export function GameScreen() {
-  const { activeGame, setActiveGame, navigate, goBack, refreshHistory } = useApp();
+  const cat = useCategoryTheme();
+  const { activeGame, setActiveGame, navigate, goBack, refreshHistory, abandonActiveGame } =
+    useApp();
   const [sliderValue, setSliderValue] = useState(50);
   const [remainingMs, setRemainingMs] = useState(ROUND_TIME_MS);
-  const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<Phase>('playing');
+  const [lockedRound, setLockedRound] = useState<number | null>(null);
 
   const sliderRef = useRef(50);
-  const submittingRef = useRef(false);
+  const phaseRef = useRef<Phase>('playing');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const roundStartRef = useRef(Date.now());
 
   const currentIndex =
     activeGame?.rounds.findIndex((r) => !r.playerAnswer) ?? -1;
   const round = currentIndex >= 0 ? activeGame?.rounds[currentIndex] : undefined;
-  const isUrgent = remainingMs <= 3000;
 
   const submitAnswer = useCallback(
     async (value: number) => {
-      if (submittingRef.current || !activeGame || currentIndex < 0) return;
-      submittingRef.current = true;
-      setSubmitting(true);
+      if (phaseRef.current !== 'playing' || !activeGame || currentIndex < 0 || !round) return;
+
+      phaseRef.current = 'locking';
+      setPhase('locking');
+      setLockedRound(round.roundNumber);
       if (timerRef.current) clearInterval(timerRef.current);
 
       const responseTimeMs = Math.min(Date.now() - roundStartRef.current, ROUND_TIME_MS);
-      const updated = await submitRoundAnswer(activeGame, currentIndex, value, responseTimeMs);
-      setActiveGame(updated);
+      const updated = submitRoundAnswer(activeGame, currentIndex, value, responseTimeMs);
 
       const isLastRound = currentIndex >= updated.rounds.length - 1;
       if (isLastRound) {
+        phaseRef.current = 'submitting';
+        setPhase('submitting');
         const completed = await completeGame(updated);
         setActiveGame(completed);
         await refreshHistory();
         navigate({ name: 'game-summary', gameId: completed.id });
-      } else {
-        submittingRef.current = false;
-        setSubmitting(false);
+        return;
       }
+
+      setActiveGame(updated);
+      await new Promise((r) => setTimeout(r, 450));
+      phaseRef.current = 'playing';
+      setPhase('playing');
+      setLockedRound(null);
     },
-    [activeGame, currentIndex, navigate, refreshHistory, setActiveGame],
+    [activeGame, currentIndex, navigate, refreshHistory, round, setActiveGame],
   );
 
   useEffect(() => {
-    if (currentIndex < 0) return;
+    if (currentIndex < 0 || phase !== 'playing') return;
 
     roundStartRef.current = Date.now();
     sliderRef.current = 50;
     setSliderValue(50);
     setRemainingMs(ROUND_TIME_MS);
-    submittingRef.current = false;
-    setSubmitting(false);
 
     timerRef.current = setInterval(() => {
+      if (phaseRef.current !== 'playing') return;
       const elapsed = Date.now() - roundStartRef.current;
       const left = Math.max(0, ROUND_TIME_MS - elapsed);
       setRemainingMs(left);
-
-      if (left <= 0 && !submittingRef.current) {
-        submitAnswer(sliderRef.current);
-      }
+      if (left <= 0) submitAnswer(sliderRef.current);
     }, 50);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentIndex, submitAnswer]);
+  }, [currentIndex, phase, submitAnswer]);
 
-  if (!activeGame || !round || currentIndex < 0) {
+  if (!activeGame || !round) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Game" onBack={goBack} />
+        <ScreenHeader title="Forecast" onBack={() => { abandonActiveGame(); goBack(); }} />
         <Text style={styles.error}>No active round.</Text>
       </View>
     );
   }
 
-  function handleSliderChange(value: number) {
-    sliderRef.current = value;
-    setSliderValue(value);
-  }
-
-  function handleRelease(value: number) {
-    submitAnswer(value);
-  }
-
-  const progress = remainingMs / ROUND_TIME_MS;
+  const answeredCount = activeGame.rounds.filter((r) => r.playerAnswer).length;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: cat.heroBg }]}>
       <ScreenHeader
-        title={`Round ${round.roundNumber} / ${activeGame.rounds.length}`}
+        title={`Forecast ${round.roundNumber} / ${activeGame.rounds.length}`}
         subtitle={activeGame.categoryName}
-        onBack={goBack}
+        onBack={() => {
+          abandonActiveGame();
+          goBack();
+        }}
+        accentColor={cat.primary}
       />
 
-      <View style={styles.timerCard}>
-        <View style={styles.timerTop}>
-          <Text style={styles.timerLabel}>Time remaining</Text>
-          <Text style={[styles.timerValue, isUrgent && styles.timerUrgent]}>
-            {formatCountdown(remainingMs)}s
-          </Text>
-        </View>
-        <View style={styles.timerTrack}>
+      <View style={styles.progressDots}>
+        {activeGame.rounds.map((r, i) => (
           <View
+            key={r.roundContentId}
             style={[
-              styles.timerFill,
-              { width: `${progress * 100}%` },
-              isUrgent && styles.timerFillUrgent,
+              styles.dot,
+              i < answeredCount && { backgroundColor: cat.primary },
+              i === currentIndex && phase === 'playing' && styles.dotActive,
+              i === currentIndex && phase === 'playing' && { borderColor: cat.primary },
             ]}
           />
-        </View>
+        ))}
       </View>
 
-      <Image source={{ uri: round.imageUrl }} style={styles.image} contentFit="cover" />
+      {phase === 'playing' && (
+        <>
+          <CountdownTimer remainingMs={remainingMs} />
 
-      <View style={styles.sliderSection}>
-        <Text style={styles.prompt}>How real does this look?</Text>
-        <GameSlider
-          value={sliderValue}
-          onChange={handleSliderChange}
-          onRelease={handleRelease}
-          disabled={submitting}
-        />
-        <Text style={styles.hint}>Release the slider to submit · faster answers earn more points</Text>
-      </View>
+          <View style={[styles.imageFrame, { borderColor: cat.primaryMuted }]}>
+            <Image source={{ uri: round.imageUrl }} style={styles.image} contentFit="cover" />
+          </View>
 
-      {submitting && (
-        <View style={styles.submittingOverlay}>
-          <Text style={styles.submittingText}>Submitting…</Text>
+          <View style={styles.sliderSection}>
+            <Text style={styles.prompt}>Assign probability this image is AI-generated</Text>
+            <ProbabilitySlider
+              value={sliderValue}
+              onChange={(v) => {
+                sliderRef.current = v;
+                setSliderValue(v);
+              }}
+              onRelease={submitAnswer}
+            />
+          </View>
+        </>
+      )}
+
+      {(phase === 'locking' || phase === 'submitting') && (
+        <View style={styles.lockOverlay}>
+          <View style={[styles.lockCard, { backgroundColor: cat.primaryMuted }]}>
+            {phase === 'submitting' ? (
+              <>
+                <ActivityIndicator color={cat.primary} size="large" />
+                <Text style={[styles.lockTitle, { color: cat.primary }]}>Calculating results…</Text>
+              </>
+            ) : (
+              <>
+                <Text style={[styles.lockIcon, { color: cat.primary }]}>✓</Text>
+                <Text style={[styles.lockTitle, { color: cat.primary }]}>
+                  Round {lockedRound} locked in
+                </Text>
+                <Text style={styles.lockSub}>Results after all {activeGame.rounds.length} forecasts</Text>
+              </>
+            )}
+          </View>
         </View>
       )}
     </View>
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: c.bg,
   },
-  timerCard: {
-    marginHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing.md,
-    backgroundColor: c.surface,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: c.border,
-    ...theme.shadow.sm,
-  },
-  timerTop: {
+  progressDots: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: theme.spacing.xl,
+    marginBottom: theme.spacing.md,
   },
-  timerLabel: {
-    color: c.textMuted,
-    fontWeight: '600',
-    fontSize: 14,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.border,
   },
-  timerValue: {
-    color: c.accent,
-    fontWeight: '800',
-    fontSize: 22,
-    fontVariant: ['tabular-nums'],
+  dotActive: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    backgroundColor: theme.colors.surface,
   },
-  timerUrgent: {
-    color: c.danger,
-  },
-  timerTrack: {
-    height: 6,
-    backgroundColor: c.surfaceAlt,
-    borderRadius: theme.radius.full,
+  imageFrame: {
+    marginHorizontal: theme.spacing.xl,
+    borderRadius: theme.radius.lg,
+    borderWidth: 2,
     overflow: 'hidden',
-  },
-  timerFill: {
-    height: '100%',
-    backgroundColor: c.accent,
-    borderRadius: theme.radius.full,
-  },
-  timerFillUrgent: {
-    backgroundColor: c.danger,
+    ...theme.shadow.md,
   },
   image: {
-    marginHorizontal: theme.spacing.xl,
-    height: 260,
-    borderRadius: theme.radius.lg,
-    backgroundColor: c.surfaceAlt,
-    borderWidth: 1,
-    borderColor: c.border,
+    height: 240,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   sliderSection: {
     flex: 1,
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.xxl,
-    justifyContent: 'center',
-    gap: theme.spacing.lg,
   },
   prompt: {
-    color: c.text,
-    fontSize: 18,
-    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
-  },
-  hint: {
-    color: c.textMuted,
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
+    marginBottom: theme.spacing.lg,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   error: {
-    color: c.danger,
+    color: theme.colors.danger,
     padding: theme.spacing.xl,
   },
-  submittingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: c.overlay,
+  lockOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: theme.spacing.xxl,
   },
-  submittingText: {
-    color: c.white,
-    fontWeight: '700',
-    fontSize: 16,
+  lockCard: {
+    borderRadius: theme.radius.xl,
+    padding: theme.spacing.xxxl,
+    alignItems: 'center',
+    minWidth: 260,
+    ...theme.shadow.md,
+  },
+  lockIcon: {
+    fontSize: 48,
+    fontWeight: '800',
+    marginBottom: theme.spacing.sm,
+  },
+  lockTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  lockSub: {
+    marginTop: theme.spacing.sm,
+    fontSize: 13,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
   },
 });

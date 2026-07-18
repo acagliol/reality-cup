@@ -1,17 +1,12 @@
 import type {
-  AiModel,
   Category,
   CrowdStats,
   LeaderboardEntry,
   RoundContent,
 } from '../../types/game';
+import { SPONSOR_AI_MODELS, getSponsorModelById } from '../ai/sponsorModels';
 
-export const MOCK_AI_MODELS: AiModel[] = [
-  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', version: '2024-08' },
-  { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'Anthropic', version: '4.0' },
-  { id: 'gemini-pro', name: 'Gemini Pro', provider: 'Google', version: '2.0' },
-  { id: 'llama-vision', name: 'Llama Vision', provider: 'Meta', version: '3.2' },
-];
+export const MOCK_AI_MODELS = SPONSOR_AI_MODELS;
 
 export const MOCK_CATEGORIES: Category[] = [
   {
@@ -113,6 +108,10 @@ export function getAiAnswersForRound(roundContentId: string) {
   }));
 }
 
+export function getAiModelById(id: string) {
+  return getSponsorModelById(id);
+}
+
 export function getCategoryById(id: string): Category | undefined {
   return MOCK_CATEGORIES.find((c) => c.id === id);
 }
@@ -129,33 +128,45 @@ export function getCrowdMean(roundContentId: string): number {
   );
 }
 
-export function getAiModelById(id: string): AiModel | undefined {
-  return MOCK_AI_MODELS.find((m) => m.id === id);
-}
-
 export function buildMockLeaderboard(
   playerName: string,
   playerScore: number,
   categoryId: string,
 ): LeaderboardEntry[] {
-  const names = [
+  const botNames = [
     'PixelPro',
     'TruthSeeker',
     'DeepFakeHunter',
     'Visionary',
     'RealOrNot',
     'SynthSpotter',
-    playerName,
     'ImageDetective',
     'AIEye',
     'CrowdWisdom',
+    'NeuralNet',
+    'PhotoForensics',
+    'LensLogic',
+    'SignalBoost',
+    'DeepSight',
+    'ProbBot',
+    'Calibrated',
+    'SharpEye',
+    'MetaFilter',
+    'SynthScan',
+    'GroundTruth',
   ];
 
-  const scores = names.map((name, i) => ({
+  const scores = botNames.map((name) => ({
     playerName: name,
-    score: name === playerName ? playerScore : seededValue(`${categoryId}-${name}`, 420, 980),
-    isCurrentPlayer: name === playerName,
+    score: seededValue(`${categoryId}-${name}`, 520, 990),
+    isCurrentPlayer: false,
   }));
+
+  scores.push({
+    playerName,
+    score: playerScore > 0 ? playerScore : seededValue(`${categoryId}-${playerName}`, 180, 480),
+    isCurrentPlayer: true,
+  });
 
   scores.sort((a, b) => b.score - a.score);
 

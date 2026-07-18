@@ -1,18 +1,48 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LeaderboardSheet } from '../components/LeaderboardSheet';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
 import { getCategoryById } from '../lib/mock/data';
-import { createGameSession } from '../lib/services/gameService';
+import { createGameSession, getBestScoreForCategory } from '../lib/services/gameService';
+import { fetchCategoryLeaderboard } from '../lib/services/leaderboardService';
 import { theme } from '../lib/theme';
-import { ROUND_TIME_SECONDS, ROUNDS_PER_GAME } from '../types/game';
+import type { CategoryLeaderboard } from '../types/game';
+import { ACCURACY_WEIGHT, MAX_GAME_SCORE, ROUND_TIME_SECONDS, ROUNDS_PER_GAME, SPEED_WEIGHT } from '../types/game';
 
 interface CategoryDetailScreenProps {
   categoryId: string;
 }
 
 export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) {
-  const { playerName, goBack, navigate, setActiveGame, refreshHistory } = useApp();
+  const cat = useCategoryTheme();
+  const { playerName, goBack, navigate, setActiveGame, abandonActiveGame, gameHistory } =
+    useApp();
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState<CategoryLeaderboard | null>(null);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const category = getCategoryById(categoryId);
+
+  const bestScore = getBestScoreForCategory(gameHistory, categoryId, playerName ?? '');
+
+  const loadLeaderboard = useCallback(async () => {
+    setLeaderboardLoading(true);
+    try {
+      const data = await fetchCategoryLeaderboard(
+        categoryId,
+        playerName ?? 'You',
+        bestScore,
+      );
+      setLeaderboardData(data);
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  }, [categoryId, playerName, bestScore]);
+
+  useEffect(() => {
+    if (leaderboardOpen) loadLeaderboard();
+  }, [leaderboardOpen, loadLeaderboard]);
 
   if (!category) {
     return (
@@ -22,48 +52,88 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
     );
   }
 
-  async function startGame() {
+  function startGame() {
     if (!playerName) return;
-    const game = await createGameSession(categoryId, playerName);
+    abandonActiveGame();
+    const game = createGameSession(categoryId, playerName);
     setActiveGame(game);
-    await refreshHistory();
     navigate({ name: 'game', categoryId });
   }
 
   return (
-    <View style={styles.container}>
-      <ScreenHeader title={category.name} subtitle={category.description} onBack={goBack} />
+    <View style={[styles.container, { backgroundColor: cat.heroBg }]}>
+      <ScreenHeader
+        title={category.name}
+        subtitle={category.description}
+        onBack={goBack}
+        accentColor={cat.primary}
+      />
 
       <View style={styles.body}>
-        <View style={styles.hero}>
-          <Text style={styles.heroIcon}>{category.icon}</Text>
-          <Text style={styles.heroText}>
-            {ROUNDS_PER_GAME} rounds · {ROUND_TIME_SECONDS}s per round · Real (0) to Fake (100)
+        <View style={[styles.hero, { borderColor: cat.primaryMuted }]}>
+          <View style={[styles.iconCircle, { backgroundColor: cat.primaryMuted }]}>
+            <Text style={styles.heroIcon}>{category.icon}</Text>
+          </View>
+          <Text style={[styles.heroStat, { color: cat.primary }]}>
+            {ROUNDS_PER_GAME} × {ROUND_TIME_SECONDS}s
           </Text>
+          <Text style={styles.heroText}>Probability forecasts per session</Text>
+          {bestScore > 0 && (
+            <Text style={[styles.bestScore, { color: cat.primary }]}>
+              Your best: {bestScore} pts
+            </Text>
+          )}
         </View>
 
         <View style={styles.rules}>
-          <Text style={styles.rulesTitle}>How it works</Text>
-          <Text style={styles.rule}>• You have {ROUND_TIME_SECONDS} seconds per round — timer counts down</Text>
-          <Text style={styles.rule}>• Slide toward Real or Fake, release to submit</Text>
-          <Text style={styles.rule}>• Score = 70% accuracy + 30% speed bonus</Text>
-          <Text style={styles.rule}>• Review all round stats at the end</Text>
+          <Text style={styles.rulesTitle}>Scoring model</Text>
+          <Text style={styles.rule}>• {ROUND_TIME_SECONDS}s countdown — lock before zero</Text>
+          <Text style={styles.rule}>
+            • {Math.round(ACCURACY_WEIGHT * 100)}% calibration (100 − |your guess − truth|)
+          </Text>
+          <Text style={styles.rule}>
+            • {Math.round(SPEED_WEIGHT * 100)}% speed bonus from ms remaining
+          </Text>
+          <Text style={styles.rule}>• Max {MAX_GAME_SCORE} pts per session ({ROUNDS_PER_GAME} rounds)</Text>
+          <Text style={styles.rule}>• Compare vs Codex, Cursor & Gemini sponsor models after</Text>
         </View>
 
-        <Pressable style={styles.startButton} onPress={startGame}>
-          <Text style={styles.startText}>Start Game</Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.leaderboardButton, { borderColor: cat.primary }]}
+            onPress={() => setLeaderboardOpen(true)}
+          >
+            <Text style={[styles.leaderboardText, { color: cat.primary }]}>Leaderboard</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.startButton, { backgroundColor: cat.primary }]}
+            onPress={startGame}
+          >
+            <Text style={styles.startText}>Begin forecasting</Text>
+          </Pressable>
+        </View>
       </View>
+
+      <LeaderboardSheet
+        visible={leaderboardOpen}
+        title={category.name}
+        subtitle={
+          bestScore > 0
+            ? `Your best score: ${bestScore} pts`
+            : 'Complete a session to appear on the board'
+        }
+        data={leaderboardData}
+        loading={leaderboardLoading}
+        onClose={() => setLeaderboardOpen(false)}
+      />
     </View>
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: c.bg,
   },
   body: {
     flex: 1,
@@ -72,53 +142,86 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxxl,
   },
   hero: {
-    backgroundColor: c.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.xxl,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.xl,
+    padding: theme.spacing.xxxl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: c.border,
-    ...theme.shadow.sm,
+    ...theme.shadow.md,
+  },
+  iconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.lg,
   },
   heroIcon: {
-    fontSize: 56,
-    marginBottom: theme.spacing.md,
+    fontSize: 44,
+  },
+  heroStat: {
+    fontSize: 28,
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+    fontFamily: theme.font.mono,
   },
   heroText: {
-    color: c.textMuted,
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    marginTop: theme.spacing.sm,
+  },
+  bestScore: {
+    marginTop: theme.spacing.md,
+    fontSize: 14,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
   rules: {
-    backgroundColor: c.surfaceAlt,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
     gap: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: c.border,
+    borderColor: theme.colors.border,
   },
   rulesTitle: {
-    color: c.text,
-    fontWeight: '700',
-    fontSize: 16,
+    color: theme.colors.text,
+    fontWeight: '800',
+    fontSize: 13,
     marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   rule: {
-    color: c.textSecondary,
+    color: theme.colors.textSecondary,
     fontSize: 14,
     lineHeight: 22,
   },
+  actions: {
+    gap: theme.spacing.sm,
+  },
+  leaderboardButton: {
+    borderRadius: theme.radius.lg,
+    paddingVertical: theme.spacing.md,
+    alignItems: 'center',
+    borderWidth: 2,
+    backgroundColor: theme.colors.surface,
+  },
+  leaderboardText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
   startButton: {
-    backgroundColor: c.accent,
     borderRadius: theme.radius.lg,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
     ...theme.shadow.sm,
   },
   startText: {
-    color: c.white,
-    fontSize: 18,
+    color: theme.colors.textInverse,
+    fontSize: 17,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
 });

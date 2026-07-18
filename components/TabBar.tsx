@@ -8,7 +8,7 @@ interface TabBarProps {
 }
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'games', label: 'Games' },
+  { id: 'games', label: 'Markets' },
   { id: 'profile', label: 'Profile' },
 ];
 
@@ -31,19 +31,16 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
   );
 }
 
-const c = theme.colors;
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: c.surface,
+    backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.md,
     padding: 4,
     marginHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: c.border,
-    ...theme.shadow.sm,
+    borderColor: theme.colors.border,
   },
   tab: {
     flex: 1,
@@ -52,14 +49,15 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.sm,
   },
   tabActive: {
-    backgroundColor: c.accent,
+    backgroundColor: theme.colors.surface,
+    ...theme.shadow.sm,
   },
   label: {
-    color: c.textMuted,
-    fontWeight: '600',
-    fontSize: 15,
+    color: theme.colors.textMuted,
+    fontWeight: '700',
+    fontSize: 14,
   },
   labelActive: {
-    color: c.white,
+    color: theme.colors.text,
   },
 });

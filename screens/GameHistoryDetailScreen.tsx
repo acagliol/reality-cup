@@ -15,7 +15,7 @@ export function GameHistoryDetailScreen({ gameId }: GameHistoryDetailScreenProps
   if (!game) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Game History" onBack={goBack} />
+        <ScreenHeader title="History" onBack={goBack} />
         <Text style={styles.missing}>Game not found.</Text>
       </View>
     );
@@ -31,7 +31,11 @@ export function GameHistoryDetailScreen({ gameId }: GameHistoryDetailScreenProps
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {game.rounds.map((round) => (
-          <RoundBreakdown key={round.roundContentId} round={round} />
+          <RoundBreakdown
+            key={round.roundContentId}
+            round={round}
+            categoryId={game.categoryId}
+          />
         ))}
       </ScrollView>
     </View>
