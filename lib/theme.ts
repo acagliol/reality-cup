@@ -1,0 +1,67 @@
+export const theme = {
+  colors: {
+    bg: '#F4F6FB',
+    surface: '#FFFFFF',
+    surfaceAlt: '#EEF2FA',
+    border: '#E2E8F0',
+    borderStrong: '#CBD5E1',
+    text: '#0F172A',
+    textSecondary: '#334155',
+    textMuted: '#64748B',
+    accent: '#5B4FE8',
+    accentSoft: '#7C72F0',
+    accentMuted: '#EDE9FE',
+    success: '#059669',
+    successMuted: '#D1FAE5',
+    warning: '#D97706',
+    warningMuted: '#FEF3C7',
+    danger: '#DC2626',
+    dangerMuted: '#FEE2E2',
+    real: '#0D9488',
+    fake: '#EA580C',
+    white: '#FFFFFF',
+    overlay: 'rgba(15, 23, 42, 0.45)',
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+  radius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    full: 999,
+  },
+  shadow: {
+    sm: {
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    md: {
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 4,
+    },
+  },
+  typography: {
+    title: { fontSize: 28, fontWeight: '800' as const },
+    heading: { fontSize: 18, fontWeight: '700' as const },
+    body: { fontSize: 15, fontWeight: '400' as const },
+    caption: { fontSize: 13, fontWeight: '500' as const },
+    label: { fontSize: 12, fontWeight: '600' as const },
+  },
+};
+
+/** Flat color aliases for existing components */
+export const colors = theme.colors;
