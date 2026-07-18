@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RoundBreakdown } from '../components/RoundBreakdown';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useApp } from '../context/AppContext';
+import { formatRbp } from '../lib/scoring';
 import { theme } from '../lib/theme';
 
 interface GameHistoryDetailScreenProps {
@@ -25,7 +26,7 @@ export function GameHistoryDetailScreen({ gameId }: GameHistoryDetailScreenProps
     <View style={styles.container}>
       <ScreenHeader
         title={game.categoryName}
-        subtitle={`${game.totalScore} pts · ${game.status === 'completed' ? 'Completed' : 'In progress'}`}
+        subtitle={`${formatRbp(game.totalScore)} RBP · ${game.status === 'completed' ? 'Completed' : 'In progress'}`}
         onBack={goBack}
       />
 

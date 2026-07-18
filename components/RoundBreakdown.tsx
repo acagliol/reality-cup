@@ -5,7 +5,13 @@ import { ProbabilityTrack } from './ProbabilityTrack';
 import { CategoryThemeProvider } from '../context/CategoryThemeContext';
 import { getAiModelById } from '../lib/mock/data';
 import { formatModelSubtitle } from '../lib/ai/sponsorModels';
-import { formatMs } from '../lib/scoring';
+import {
+  displayTruthValue,
+  formatBrier,
+  formatMs,
+  formatRbp,
+  truthLabel,
+} from '../lib/scoring';
 import { getCategoryTheme, theme } from '../lib/theme';
 import type { GameRound } from '../types/game';
 
@@ -17,6 +23,7 @@ interface RoundBreakdownProps {
 function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryId: string }) {
   const cat = getCategoryTheme(categoryId);
   const answer = round.playerAnswer;
+  const truthDisplay = displayTruthValue(round.truthValue);
 
   if (!answer) {
     return <Text style={{ color: theme.colors.textMuted }}>Not played yet</Text>;
@@ -28,20 +35,31 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
 
       <View style={styles.scoreRow}>
         <View style={[styles.scorePill, { backgroundColor: cat.primaryMuted }]}>
-          <Text style={styles.scorePillLabel}>Accuracy</Text>
-          <Text style={[styles.scorePillValue, { color: cat.primary }]}>
-            {answer.accuracyScore ?? '—'}
+          <Text style={styles.scorePillLabel}>RBP</Text>
+          <Text
+            style={[
+              styles.scorePillValue,
+              { color: answer.roundScore >= 0 ? theme.colors.success : theme.colors.danger },
+            ]}
+          >
+            {formatRbp(answer.roundScore)}
           </Text>
         </View>
         <View style={styles.scorePill}>
-          <Text style={styles.scorePillLabel}>Speed</Text>
-          <Text style={styles.scorePillValue}>{answer.speedScore.toFixed(1)}</Text>
+          <Text style={styles.scorePillLabel}>Your Brier</Text>
+          <Text style={styles.scorePillValue}>{formatBrier(answer.userBrier)}</Text>
         </View>
         <View style={[styles.scorePill, { borderColor: cat.primary, borderWidth: 1 }]}>
-          <Text style={styles.scorePillLabel}>Total</Text>
-          <Text style={[styles.scorePillValue, { color: cat.primary }]}>{answer.roundScore}</Text>
+          <Text style={styles.scorePillLabel}>Benchmark</Text>
+          <Text style={[styles.scorePillValue, { color: cat.primary }]}>
+            {formatBrier(answer.benchmarkBrier)}
+          </Text>
         </View>
       </View>
+
+      <Text style={styles.benchmarkNote}>
+        Benchmark = 45% crowd + 55% AI models · Truth: {truthLabel(round.truthValue)} ({truthDisplay})
+      </Text>
 
       <ProbabilityTrack label="Your forecast" value={answer.answerValue} highlight />
       <ProbabilityTrack
@@ -65,8 +83,8 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
       })}
 
       <ProbabilityTrack
-        label="Ground truth"
-        value={round.truthValue}
+        label={`Ground truth (${truthLabel(round.truthValue)})`}
+        value={truthDisplay}
         color={theme.colors.danger}
         highlight
       />
@@ -101,22 +119,40 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
   return (
     <CategoryThemeProvider categoryId={categoryId}>
       <View style={[styles.card, { borderLeftColor: cat.primary }]}>
-        <Pressable onPress={() => setExpanded((v) => !v)} style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.roundTitle}>Round {round.roundNumber}</Text>
-            {answer ? (
-              <Text style={styles.roundMeta}>
-                {answer.roundScore} pts · {formatMs(answer.responseTimeMs)}
-              </Text>
-            ) : (
-              <Text style={styles.roundMeta}>Not played</Text>
-            )}
-          </View>
+        <View style={styles.header}>
+          <Pressable onPress={() => setExpanded((v) => !v)} style={styles.headerMain}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.roundTitle}>Round {round.roundNumber}</Text>
+              {answer ? (
+                <Text style={styles.roundMeta}>
+                  {formatRbp(answer.roundScore)} RBP · {formatMs(answer.responseTimeMs)}
+                </Text>
+              ) : (
+                <Text style={styles.roundMeta}>Not played</Text>
+              )}
+            </View>
+            <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
+          </Pressable>
           <View style={styles.headerRight}>
             {answer && (
-              <View style={[styles.pointsBadge, { backgroundColor: cat.primaryMuted }]}>
-                <Text style={[styles.pointsBadgeText, { color: cat.primary }]}>
-                  {answer.roundScore}
+              <View
+                style={[
+                  styles.pointsBadge,
+                  {
+                    backgroundColor:
+                      answer.roundScore >= 0 ? theme.colors.accentMuted : theme.colors.dangerMuted,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.pointsBadgeText,
+                    {
+                      color: answer.roundScore >= 0 ? theme.colors.success : theme.colors.danger,
+                    },
+                  ]}
+                >
+                  {formatRbp(answer.roundScore)}
                 </Text>
               </View>
             )}
@@ -127,9 +163,8 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
             >
               <Text style={[styles.popupBtnText, { color: cat.primary }]}>↗</Text>
             </Pressable>
-            <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
           </View>
-        </Pressable>
+        </View>
 
         {expanded && (
           <View style={styles.body}>
@@ -137,20 +172,27 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
           </View>
         )}
 
-        <Modal visible={modalVisible} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalSheet}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Round {round.roundNumber}</Text>
-                <Pressable onPress={() => setModalVisible(false)} hitSlop={12}>
-                  <Text style={[styles.modalClose, { color: cat.primary }]}>Done</Text>
-                </Pressable>
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalVisible(false)}
+        >
+          {modalVisible && (
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalSheet}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Round {round.roundNumber}</Text>
+                  <Pressable onPress={() => setModalVisible(false)} hitSlop={12}>
+                    <Text style={[styles.modalClose, { color: cat.primary }]}>Done</Text>
+                  </Pressable>
+                </View>
+                <ScrollView contentContainerStyle={styles.modalScroll}>
+                  <RoundDetailContent round={round} categoryId={categoryId} />
+                </ScrollView>
               </View>
-              <ScrollView contentContainerStyle={styles.modalScroll}>
-                <RoundDetailContent round={round} categoryId={categoryId} />
-              </ScrollView>
             </View>
-          </View>
+          )}
         </Modal>
       </View>
     </CategoryThemeProvider>
@@ -173,6 +215,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  headerMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerLeft: { flex: 1 },
   headerRight: {
@@ -226,6 +275,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
+  benchmarkNote: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.md,
+    lineHeight: 16,
+  },
   image: {
     height: 160,
     borderRadius: theme.radius.sm,
@@ -235,7 +290,7 @@ const styles = StyleSheet.create({
   scoreRow: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   scorePill: {
     flex: 1,
@@ -254,7 +309,7 @@ const styles = StyleSheet.create({
   scorePillValue: {
     color: theme.colors.text,
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 14,
     marginTop: 2,
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,

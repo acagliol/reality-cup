@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LeaderboardList, LeaderboardLoading } from '../components/LeaderboardList';
 import { RoundBreakdown } from '../components/RoundBreakdown';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
 import { fetchCategoryLeaderboard } from '../lib/services/leaderboardService';
+import { formatRbp } from '../lib/scoring';
 import { theme } from '../lib/theme';
 import type { CategoryLeaderboard } from '../types/game';
 
@@ -14,16 +14,21 @@ interface GameSummaryScreenProps {
 }
 
 export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
-  const cat = useCategoryTheme();
-  const { activeGame, goBack, resetToTabs, gameHistory } = useApp();
-  const game =
-    activeGame?.id === gameId ? activeGame : gameHistory.find((g) => g.id === gameId) ?? null;
+  const { activeGame, leaveSummary, resetToTabs, gameHistory } = useApp();
+  const game = useMemo(
+    () =>
+      activeGame?.id === gameId
+        ? activeGame
+        : gameHistory.find((g) => g.id === gameId) ?? null,
+    [activeGame, gameHistory, gameId],
+  );
 
   const [leaderboard, setLeaderboard] = useState<CategoryLeaderboard | null>(null);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
   useEffect(() => {
     if (!game) return;
+    let cancelled = false;
     (async () => {
       setLeaderboardLoading(true);
       try {
@@ -32,17 +37,27 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
           game.playerName,
           game.totalScore,
         );
-        setLeaderboard(data);
+        if (!cancelled) setLeaderboard(data);
+      } catch (err) {
+        console.warn('Leaderboard fetch failed', err);
+        if (!cancelled) setLeaderboard(null);
       } finally {
-        setLeaderboardLoading(false);
+        if (!cancelled) setLeaderboardLoading(false);
       }
     })();
-  }, [game]);
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id, game?.categoryId, game?.playerName, game?.totalScore]);
 
   if (!game) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Results" onBack={goBack} />
+        <ScreenHeader title="Results" onBack={leaveSummary} />
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={theme.colors.text} size="large" />
+          <Text style={styles.missing}>Loading results…</Text>
+        </View>
       </View>
     );
   }
@@ -50,37 +65,35 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
   const pinned = leaderboard?.pinnedPlayerEntry;
   const topPlayer = leaderboard?.topEntries.find((e) => e.isCurrentPlayer);
   const playerRank = topPlayer?.rank ?? pinned?.rank;
-  const avgScore = Math.round(game.totalScore / game.rounds.length);
 
   return (
-    <View style={[styles.container, { backgroundColor: cat.heroBg }]}>
+    <View style={styles.container}>
       <ScreenHeader
         title="Session complete"
-        subtitle={`${game.categoryName} · ${game.totalScore} pts`}
-        onBack={goBack}
-        accentColor={cat.primary}
+        subtitle={`${game.categoryName}`}
+        onBack={leaveSummary}
+        totalRbp={Number.isFinite(game.totalScore) ? game.totalScore : undefined}
       />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.statsRow}>
-          <View style={[styles.stat, { borderColor: cat.primaryMuted }]}>
-            <Text style={[styles.statValue, { color: cat.primary }]}>{game.totalScore}</Text>
-            <Text style={styles.statLabel}>Total</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{avgScore}</Text>
-            <Text style={styles.statLabel}>Avg / round</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, { color: cat.primary }]}>
-              #{playerRank ?? '—'}
+          <View style={[styles.stat, styles.statHighlight]}>
+            <Text style={styles.statValue}>
+              {Number.isFinite(game.totalScore) ? formatRbp(game.totalScore) : '—'}
             </Text>
+            <Text style={styles.statLabel}>Total RBP</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>#{playerRank ?? '—'}</Text>
             <Text style={styles.statLabel}>Rank</Text>
+          </View>
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{game.rounds.length}</Text>
+            <Text style={styles.statLabel}>Images</Text>
           </View>
         </View>
 
         <Text style={styles.sectionTitle}>Forecast breakdown</Text>
-        <Text style={styles.sectionHint}>Expand each round or tap ↗ for full view</Text>
         {game.rounds.map((round) => (
           <RoundBreakdown
             key={round.roundContentId}
@@ -89,18 +102,15 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
           />
         ))}
 
-        <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Leaderboard · Top 10</Text>
+        <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Global Leaderboard</Text>
         {leaderboardLoading || !leaderboard ? (
           <LeaderboardLoading />
         ) : (
           <LeaderboardList data={leaderboard} compact />
         )}
 
-        <Pressable
-          style={[styles.button, { backgroundColor: cat.primary }]}
-          onPress={resetToTabs}
-        >
-          <Text style={styles.buttonText}>Back to markets</Text>
+        <Pressable style={styles.button} onPress={resetToTabs}>
+          <Text style={styles.buttonText}>Back to Markets →</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -110,6 +120,7 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.bg,
   },
   scroll: {
     paddingHorizontal: theme.spacing.xl,
@@ -128,7 +139,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: theme.colors.border,
-    ...theme.shadow.sm,
+  },
+  statHighlight: {
+    backgroundColor: theme.colors.accentMuted,
+    borderColor: theme.colors.accent,
   },
   statValue: {
     fontSize: 24,
@@ -139,11 +153,11 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: theme.colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 4,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   sectionTitle: {
     color: theme.colors.text,
@@ -153,24 +167,32 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  sectionHint: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    marginBottom: theme.spacing.lg,
-  },
   sectionSpaced: {
     marginTop: theme.spacing.xxl,
   },
   button: {
     marginTop: theme.spacing.lg,
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.full,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
+    backgroundColor: theme.colors.accent,
     ...theme.shadow.sm,
   },
   buttonText: {
-    color: theme.colors.textInverse,
+    color: theme.colors.accentText,
     fontWeight: '800',
     fontSize: 17,
+  },
+  missing: {
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  loadingWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    padding: theme.spacing.xl,
   },
 });

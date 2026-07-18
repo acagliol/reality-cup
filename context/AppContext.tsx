@@ -14,7 +14,9 @@ interface AppContextValue {
   activeGame: GameSession | null;
   setActiveTab: (tab: TabId) => void;
   navigate: (screen: Screen) => void;
+  finishGame: (gameId: string) => void;
   goBack: () => void;
+  leaveSummary: () => void;
   resetToTabs: () => void;
   saveName: (name: string) => Promise<void>;
   setActiveGame: (game: GameSession | null) => void;
@@ -52,8 +54,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setScreenStack((stack) => [...stack, next]);
   }, []);
 
+  /** Replace the in-progress game screen with the summary (so Back skips the dead game screen). */
+  const finishGame = useCallback((gameId: string) => {
+    setScreenStack((stack) => {
+      const alreadyOnSummary = stack.some(
+        (s) => s.name === 'game-summary' && s.gameId === gameId,
+      );
+      if (alreadyOnSummary) return stack;
+
+      const withoutGame =
+        stack.length > 0 && stack[stack.length - 1].name === 'game'
+          ? stack.slice(0, -1)
+          : stack;
+      return [...withoutGame, { name: 'game-summary', gameId }];
+    });
+  }, []);
+
   const goBack = useCallback(() => {
-    setScreenStack((stack) => (stack.length > 1 ? stack.slice(0, -1) : stack));
+    setScreenStack((stack) => {
+      if (stack.length <= 1) return stack;
+      // Cannot leave mid-session — must finish all questions
+      if (stack[stack.length - 1].name === 'game') return stack;
+      return stack.slice(0, -1);
+    });
+  }, []);
+
+  const leaveSummary = useCallback(() => {
+    setActiveGame(null);
+    setScreenStack([{ name: 'tabs' }]);
   }, []);
 
   const resetToTabs = useCallback(() => {
@@ -81,7 +109,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeGame,
       setActiveTab,
       navigate,
+      finishGame,
       goBack,
+      leaveSummary,
       resetToTabs,
       saveName,
       setActiveGame,
@@ -96,7 +126,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       gameHistory,
       activeGame,
       navigate,
+      finishGame,
       goBack,
+      leaveSummary,
       resetToTabs,
       saveName,
       refreshHistory,

@@ -1,6 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LeaderboardList, LeaderboardLoading } from './LeaderboardList';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
 import type { CategoryLeaderboard } from '../types/game';
 import { theme } from '../lib/theme';
 
@@ -21,8 +20,6 @@ export function LeaderboardSheet({
   loading,
   onClose,
 }: LeaderboardSheetProps) {
-  const cat = useCategoryTheme();
-
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -34,7 +31,7 @@ export function LeaderboardSheet({
               {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
             </View>
             <Pressable onPress={onClose} hitSlop={12}>
-              <Text style={[styles.close, { color: cat.primary }]}>Done</Text>
+              <Text style={styles.close}>Done</Text>
             </Pressable>
           </View>
 
@@ -88,8 +85,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   close: {
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: 16,
+    color: theme.colors.text,
   },
   list: {
     padding: theme.spacing.xl,

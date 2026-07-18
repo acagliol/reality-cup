@@ -1,84 +1,109 @@
-// Verifies player scoring formula with known test vectors.
+// Verifies Brier / RBP scoring with known test vectors.
 // Run: node scripts/verify-scoring.mjs
 
-const ACCURACY_WEIGHT = 0.7;
-const SPEED_WEIGHT = 0.3;
-const MAX_ROUND_SCORE = 100;
-const ROUND_TIME_MS = 10_000;
+const BENCHMARK_CROWD_WEIGHT = 0.45;
+const BENCHMARK_MODEL_WEIGHT = 0.55;
+const RBP_HARDNESS_MARGIN = 0.015;
+const RBP_SCALE = 100;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function scoreRound(answerValue, truthValue, responseTimeMs) {
-  const answer = clamp(Math.round(answerValue), 0, MAX_ROUND_SCORE);
-  const truth = clamp(Math.round(truthValue), 0, MAX_ROUND_SCORE);
-  const responseMs = clamp(responseTimeMs, 0, ROUND_TIME_MS);
-
-  const accuracyRaw = Math.max(0, MAX_ROUND_SCORE - Math.abs(answer - truth));
-  const timeRemainingMs = ROUND_TIME_MS - responseMs;
-  const speedRaw = (timeRemainingMs / ROUND_TIME_MS) * MAX_ROUND_SCORE;
-
-  const roundScore = Math.round(accuracyRaw * ACCURACY_WEIGHT + speedRaw * SPEED_WEIGHT);
-  const accuracyScore = Math.round(accuracyRaw);
-  const speedScore = Math.round(speedRaw * 10) / 10;
-
-  return { accuracyScore, speedScore, roundScore };
+function truthToBinary(truthValue) {
+  return truthValue >= 50 ? 1 : 0;
 }
+
+function answerToProbability(answerValue) {
+  return clamp(Math.round(answerValue), 1, 99) / 100;
+}
+
+function brierScore(probabilityFake, y) {
+  const p = clamp(probabilityFake, 0.01, 0.99);
+  return (p - y) ** 2;
+}
+
+function scoreRound(answerValue, truthValue, crowdMean, aiAnswers) {
+  const y = truthToBinary(truthValue);
+  const userBrier = brierScore(answerToProbability(answerValue), y);
+  const crowdBrier = brierScore(answerToProbability(crowdMean), y);
+  const modelBrier =
+    aiAnswers.reduce((sum, ai) => sum + brierScore(answerToProbability(ai.answerValue), y), 0) /
+    aiAnswers.length;
+  const benchmarkBrier = BENCHMARK_CROWD_WEIGHT * crowdBrier + BENCHMARK_MODEL_WEIGHT * modelBrier;
+  const roundScore =
+    Math.round((benchmarkBrier - userBrier - RBP_HARDNESS_MARGIN) * RBP_SCALE * 10) / 10;
+
+  return { userBrier, crowdBrier, modelBrier, benchmarkBrier, roundScore };
+}
+
+const models = [{ answerValue: 85 }, { answerValue: 80 }, { answerValue: 75 }];
 
 const cases = [
   {
-    name: 'Perfect + instant',
-    input: [50, 50, 0],
-    expect: { accuracyScore: 100, speedScore: 100, roundScore: 100 },
+    name: 'Fake image — excellent forecast beats benchmark',
+    input: [90, 100, 70, models],
+    expectPositive: true,
   },
   {
-    name: 'Perfect + 5s',
-    input: [80, 80, 5000],
-    expect: { accuracyScore: 100, speedScore: 50, roundScore: 85 },
+    name: 'Real image — excellent low forecast beats benchmark',
+    input: [10, 0, 60, models],
+    expectPositive: true,
   },
   {
-    name: 'Off by 10 + instant',
-    input: [40, 50, 0],
-    expect: { accuracyScore: 90, speedScore: 100, roundScore: 93 },
+    name: 'Wrong side — heavily negative',
+    input: [90, 0, 50, models],
+    expectPositive: false,
+    expectBelow: -30,
   },
   {
-    name: 'Off by 50 + timeout',
-    input: [0, 50, 10000],
-    expect: { accuracyScore: 50, speedScore: 0, roundScore: 35 },
+    name: '51% on fake — weak, usually negative vs benchmark',
+    input: [51, 100, 55, models],
+    expectPositive: false,
   },
   {
-    name: 'Clamps late response',
-    input: [50, 50, 15000],
-    expect: { accuracyScore: 100, speedScore: 0, roundScore: 70 },
-  },
-  {
-    name: 'Max game total path',
-    input: [100, 100, 0],
-    expect: { accuracyScore: 100, speedScore: 100, roundScore: 100 },
+    name: 'Matches crowd on fake — near zero or negative after margin',
+    input: [70, 100, 70, models],
+    expectBelow: 5,
   },
 ];
 
 let failed = 0;
 for (const test of cases) {
   const result = scoreRound(...test.input);
-  const ok =
-    result.accuracyScore === test.expect.accuracyScore &&
-    result.speedScore === test.expect.speedScore &&
-    result.roundScore === test.expect.roundScore;
+  let ok = true;
+
+  if (test.expectPositive === true && result.roundScore <= 0) ok = false;
+  if (test.expectPositive === false && result.roundScore > 0) ok = false;
+  if (test.expectBelow !== undefined && result.roundScore >= test.expectBelow) ok = false;
 
   if (ok) {
-    console.log(`✔ ${test.name}`);
+    console.log(`✔ ${test.name} → RBP ${result.roundScore}`);
   } else {
     failed++;
     console.log(`✗ ${test.name}`);
-    console.log('  expected', test.expect);
-    console.log('  got     ', result);
+    console.log('  got', result);
   }
+}
+
+// Simulate ~50% positive among random-ish forecasts
+const sim = [];
+for (let i = 0; i < 200; i++) {
+  const answer = 1 + (i * 17) % 99;
+  const truth = i % 2 === 0 ? 100 : 0;
+  const crowd = 30 + (i * 13) % 40;
+  const r = scoreRound(answer, truth, crowd, models);
+  sim.push(r.roundScore);
+}
+const positiveRate = sim.filter((s) => s > 0).length / sim.length;
+console.log(`\nSimulated positive rate: ${(positiveRate * 100).toFixed(0)}% (target ~50%)`);
+
+if (positiveRate < 0.35 || positiveRate > 0.65) {
+  console.log('⚠ Positive rate outside 35–65% band — tune RBP_HARDNESS_MARGIN');
 }
 
 if (failed > 0) {
   process.exit(1);
 }
 
-console.log('\nAll scoring vectors passed. Max game score = 1000 (10 × 100).');
+console.log('\nAll scoring vectors passed.');

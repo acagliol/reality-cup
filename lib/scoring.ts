@@ -1,13 +1,22 @@
-import {
-  ACCURACY_WEIGHT,
-  MAX_ROUND_SCORE,
-  ROUND_TIME_MS,
-  SPEED_WEIGHT,
-} from '../types/game';
+import type { AiAnswer } from '../types/game';
+
+/** Weight crowd in composite benchmark (rest = models). */
+export const BENCHMARK_CROWD_WEIGHT = 0.45;
+export const BENCHMARK_MODEL_WEIGHT = 0.55;
+
+/**
+ * Must beat the composite benchmark by this much (Brier units) to break even.
+ * Makes ~top half of forecasts positive in typical sessions.
+ */
+export const RBP_HARDNESS_MARGIN = 0.015;
+
+export const RBP_SCALE = 100;
 
 export interface RoundScoreBreakdown {
-  accuracyScore: number;
-  speedScore: number;
+  userBrier: number;
+  crowdBrier: number;
+  modelBrier: number;
+  benchmarkBrier: number;
   roundScore: number;
 }
 
@@ -15,44 +24,96 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/** Ground truth as binary outcome: 0 = real, 1 = fake. */
+export function truthToBinary(truthValue: number): 0 | 1 {
+  return truthValue >= 50 ? 1 : 0;
+}
+
+/** Display on 0–100 slider axis: 0 = real, 100 = fake. */
+export function displayTruthValue(truthValue: number): 0 | 100 {
+  return truthValue >= 50 ? 100 : 0;
+}
+
+export function truthLabel(truthValue: number): 'Real' | 'Fake' {
+  return truthToBinary(truthValue) === 1 ? 'Fake' : 'Real';
+}
+
+/** Player/model probability of fake from 1–99 submission. */
+export function answerToProbability(answerValue: number): number {
+  return clamp(Math.round(answerValue), 1, 99) / 100;
+}
+
+/** Brier score — lower is better. y ∈ {0, 1}. */
+export function brierScore(probabilityFake: number, y: 0 | 1): number {
+  const p = clamp(probabilityFake, 0.01, 0.99);
+  return (p - y) ** 2;
+}
+
+function meanModelBrier(aiAnswers: AiAnswer[], y: 0 | 1): number {
+  if (aiAnswers.length === 0) return 0;
+  const total = aiAnswers.reduce(
+    (sum, ai) => sum + brierScore(answerToProbability(ai.answerValue), y),
+    0,
+  );
+  return total / aiAnswers.length;
+}
+
+function compositeBenchmarkBrier(crowdBrier: number, modelBrier: number): number {
+  return BENCHMARK_CROWD_WEIGHT * crowdBrier + BENCHMARK_MODEL_WEIGHT * modelBrier;
+}
+
 /**
- * Score one round on a 0–100 scale.
+ * Relative Brier Points for one image vs crowd + AI models.
  *
- * All values use the same 0–100 probability scale (P fake / AI-generated).
+ *   user_brier      = (p − y)²
+ *   crowd_brier     = (crowd_p − y)²
+ *   model_brier     = mean((model_p − y)²)
+ *   benchmark_brier = 0.45·crowd + 0.55·models
+ *   RBP             = (benchmark − user − margin) × 100
  *
- * Accuracy (0–100): linear calibration — perfect forecast scores 100.
- *   A = max(0, 100 − |answer − truth|)
- *
- * Speed (0–100): linear bonus from time remaining in the countdown window.
- *   S = (ROUND_TIME_MS − min(responseMs, ROUND_TIME_MS)) / ROUND_TIME_MS × 100
- *
- * Round score (integer): weighted composite, rounded once at the end.
- *   R = round(A × 0.7 + S × 0.3)
- *
- * Max per round: 100. Max game total: 1000 (10 rounds).
+ * y = 1 fake, y = 0 real. Only ~top half of players beat the margin each round.
  */
 export function scoreRound(
   answerValue: number,
   truthValue: number,
-  responseTimeMs: number,
+  crowdMean: number,
+  aiAnswers: AiAnswer[],
 ): RoundScoreBreakdown {
-  const answer = clamp(Math.round(answerValue), 0, MAX_ROUND_SCORE);
-  const truth = clamp(Math.round(truthValue), 0, MAX_ROUND_SCORE);
-  const responseMs = clamp(responseTimeMs, 0, ROUND_TIME_MS);
+  const y = truthToBinary(truthValue);
+  const userBrier = brierScore(answerToProbability(answerValue), y);
+  const crowdBrier = brierScore(answerToProbability(crowdMean), y);
+  const modelBrier = meanModelBrier(aiAnswers, y);
+  const benchmarkBrier = compositeBenchmarkBrier(crowdBrier, modelBrier);
 
-  const accuracyRaw = Math.max(0, MAX_ROUND_SCORE - Math.abs(answer - truth));
-  const timeRemainingMs = ROUND_TIME_MS - responseMs;
-  const speedRaw = (timeRemainingMs / ROUND_TIME_MS) * MAX_ROUND_SCORE;
+  const rawRbp = (benchmarkBrier - userBrier - RBP_HARDNESS_MARGIN) * RBP_SCALE;
+  const roundScore = Math.round(rawRbp * 10) / 10;
 
-  const roundScore = Math.round(accuracyRaw * ACCURACY_WEIGHT + speedRaw * SPEED_WEIGHT);
-  const accuracyScore = Math.round(accuracyRaw);
-  const speedScore = Math.round(speedRaw * 10) / 10;
+  return {
+    userBrier: round4(userBrier),
+    crowdBrier: round4(crowdBrier),
+    modelBrier: round4(modelBrier),
+    benchmarkBrier: round4(benchmarkBrier),
+    roundScore,
+  };
+}
 
-  return { accuracyScore, speedScore, roundScore };
+function round4(n: number): number {
+  return Math.round(n * 10_000) / 10_000;
 }
 
 export function sumRoundScores(roundScores: number[]): number {
-  return roundScores.reduce((total, score) => total + score, 0);
+  return Math.round(roundScores.reduce((total, score) => total + score, 0) * 10) / 10;
+}
+
+export function formatRbp(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  const rounded = Math.round(value * 10) / 10;
+  return rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1);
+}
+
+export function formatBrier(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  return value.toFixed(4);
 }
 
 export function formatCountdown(remainingMs: number): string {

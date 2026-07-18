@@ -85,7 +85,7 @@ function buildRoundContent(): RoundContent[] {
         id,
         categoryId: category.id,
         imageUrl: IMAGE_POOL[(i + category.sortOrder) % IMAGE_POOL.length],
-        truthValue: seededValue(id, 5, 95),
+        truthValue: seededValue(id, 0, 99) < 50 ? 0 : 100,
         sortOrder: i + 1,
       });
     }
@@ -156,15 +156,22 @@ export function buildMockLeaderboard(
     'GroundTruth',
   ];
 
-  const scores = botNames.map((name) => ({
-    playerName: name,
-    score: seededValue(`${categoryId}-${name}`, 520, 990),
-    isCurrentPlayer: false,
-  }));
+  const scores = botNames.map((name) => {
+    const percentile = seededValue(`${categoryId}-${name}`, 0, 1000) / 1000;
+    return {
+      playerName: name,
+      score: Math.round((percentile - 0.48) * 220 * 10) / 10,
+      isCurrentPlayer: false,
+    };
+  });
 
   scores.push({
     playerName,
-    score: playerScore > 0 ? playerScore : seededValue(`${categoryId}-${playerName}`, 180, 480),
+    score:
+      playerScore !== 0
+        ? playerScore
+        : Math.round((seededValue(`${categoryId}-${playerName}`, 0, 1000) / 1000 - 0.48) * 220 * 10) /
+          10,
     isCurrentPlayer: true,
   });
 

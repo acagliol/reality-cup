@@ -1,56 +1,54 @@
 import Slider from '@react-native-community/slider';
 import { StyleSheet, Text, View } from 'react-native';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
-import { labelForValue } from '../lib/scoring';
 import { theme } from '../lib/theme';
 
 interface ProbabilitySliderProps {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
+  showOddsBox?: boolean;
 }
 
 export function ProbabilitySlider({
   value,
   onChange,
   disabled,
+  showOddsBox = true,
 }: ProbabilitySliderProps) {
-  const cat = useCategoryTheme();
-  const fakePct = value;
-  const realPct = 100 - value;
+  const fillPct = ((value - 1) / 98) * 100;
 
   return (
     <View style={styles.container}>
-      <View style={styles.probRow}>
-        <View style={styles.probCol}>
-          <Text style={[styles.probLabel, { color: cat.real }]}>P(Real)</Text>
-          <Text style={[styles.probValue, { color: cat.real }]}>{realPct}%</Text>
+      {showOddsBox && (
+        <View style={styles.oddsBox}>
+          <Text style={styles.oddsLabel}>YOUR ODDS</Text>
+          <Text style={styles.oddsValue}>{value}%</Text>
         </View>
-        <View style={styles.divider} />
-        <View style={[styles.probCol, styles.probColRight]}>
-          <Text style={[styles.probLabel, { color: cat.fake }]}>P(Fake)</Text>
-          <Text style={[styles.probValue, { color: cat.fake }]}>{fakePct}%</Text>
+      )}
+
+      <View style={styles.sliderWrap}>
+        <View style={styles.trackBg}>
+          <View style={[styles.trackFill, { width: `${fillPct}%` }]} />
         </View>
+        <Slider
+          style={styles.slider}
+          minimumValue={1}
+          maximumValue={99}
+          step={1}
+          value={value}
+          onValueChange={onChange}
+          disabled={disabled}
+          minimumTrackTintColor="transparent"
+          maximumTrackTintColor="transparent"
+          thumbTintColor={theme.colors.surface}
+        />
       </View>
 
-      <View style={styles.trackLabels}>
-        <Text style={[styles.edge, { color: cat.real }]}>Real</Text>
-        <Text style={styles.confidence}>{labelForValue(value)}</Text>
-        <Text style={[styles.edge, { color: cat.fake }]}>Fake</Text>
+      <View style={styles.scale}>
+        <Text style={styles.scaleLabel}>0%</Text>
+        <Text style={styles.scaleMid}>Real ← → Fake</Text>
+        <Text style={styles.scaleLabel}>100%</Text>
       </View>
-
-      <Slider
-        style={styles.slider}
-        minimumValue={0}
-        maximumValue={100}
-        step={1}
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-        minimumTrackTintColor={cat.fake}
-        maximumTrackTintColor={cat.real}
-        thumbTintColor={cat.primary}
-      />
     </View>
   );
 }
@@ -59,54 +57,70 @@ const styles = StyleSheet.create({
   container: {
     gap: theme.spacing.md,
   },
-  probRow: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
+  oddsBox: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.oddsBox,
     borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    minWidth: 108,
+    alignItems: 'center',
     ...theme.shadow.sm,
   },
-  probCol: { flex: 1 },
-  probColRight: { alignItems: 'flex-end' },
-  probLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+  oddsLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.accentText,
+    letterSpacing: 1,
   },
-  probValue: {
+  oddsValue: {
     fontSize: 36,
     fontWeight: '800',
+    color: theme.colors.accentText,
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,
-    marginTop: 4,
+    marginTop: 2,
   },
-  divider: {
-    width: 1,
-    backgroundColor: theme.colors.border,
-    marginHorizontal: theme.spacing.md,
+  sliderWrap: {
+    position: 'relative',
+    height: 44,
+    justifyContent: 'center',
   },
-  trackLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  trackBg: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 8,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.colors.sliderTrack,
+    overflow: 'hidden',
   },
-  edge: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  confidence: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  trackFill: {
+    height: '100%',
+    backgroundColor: theme.colors.sliderFill,
+    borderRadius: theme.radius.full,
   },
   slider: {
     width: '100%',
     height: 44,
+  },
+  scale: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scaleLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
+    fontVariant: ['tabular-nums'],
+  },
+  scaleMid: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
 });
 

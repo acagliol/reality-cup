@@ -1,89 +1,132 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
-import { formatCountdown } from '../lib/scoring';
 import { theme } from '../lib/theme';
-import { ROUND_TIME_MS } from '../types/game';
 
 interface CountdownTimerProps {
   remainingMs: number;
+  variant?: 'clock' | 'inline';
 }
 
-export function CountdownTimer({ remainingMs }: CountdownTimerProps) {
-  const cat = useCategoryTheme();
+const TICK_COUNT = 10;
+const CLOCK_SIZE = 76;
+const CLOCK_CENTER = CLOCK_SIZE / 2;
+const TICK_RADIUS = 30;
+
+export function CountdownTimer({ remainingMs, variant = 'clock' }: CountdownTimerProps) {
   const urgent = remainingMs <= 3000;
-  const progress = remainingMs / ROUND_TIME_MS;
-  const seconds = formatCountdown(remainingMs);
+  const displaySeconds = Math.ceil(remainingMs / 1000);
+  const litTicks = Math.max(0, Math.min(TICK_COUNT, displaySeconds));
+  const accent = urgent ? theme.colors.danger : theme.colors.accent;
+
+  if (variant === 'inline') {
+    return (
+      <View style={styles.inline}>
+        <Text style={styles.inlineTime}>{displaySeconds}s</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.wrap}>
-      <View style={[styles.ringOuter, { borderColor: cat.primaryMuted }]}>
-        <View
-          style={[
-            styles.ringProgress,
-            {
-              width: `${progress * 100}%`,
-              backgroundColor: urgent ? theme.colors.danger : cat.primary,
-            },
-          ]}
-        />
-        <View style={styles.ringInner}>
-          <Text style={[styles.seconds, urgent && styles.secondsUrgent]}>{seconds}</Text>
-          <Text style={styles.unit}>sec left</Text>
+    <View style={styles.clockWrap}>
+      <View style={[styles.clockFace, urgent && styles.clockFaceUrgent]}>
+        {Array.from({ length: TICK_COUNT }).map((_, index) => {
+          const angle = (index / TICK_COUNT) * 360 - 90;
+          const rad = (angle * Math.PI) / 180;
+          const x = CLOCK_CENTER + TICK_RADIUS * Math.cos(rad);
+          const y = CLOCK_CENTER + TICK_RADIUS * Math.sin(rad);
+          const active = index < litTicks;
+
+          return (
+            <View
+              key={index}
+              style={[
+                styles.tick,
+                {
+                  left: x - 2,
+                  top: y - 5,
+                  transform: [{ rotate: `${angle + 90}deg` }],
+                  backgroundColor: active ? accent : theme.colors.border,
+                },
+              ]}
+            />
+          );
+        })}
+
+        <View style={styles.centerDisc}>
+          <Text style={[styles.clockTime, urgent && styles.urgent]}>{displaySeconds}</Text>
+          <Text style={[styles.clockUnit, urgent && styles.urgentMuted]}>sec</Text>
         </View>
       </View>
-      <Text style={styles.caption}>Forecast window closes at 0</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  clockWrap: {
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
   },
-  ringOuter: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 6,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
+  clockFace: {
+    width: CLOCK_SIZE,
+    height: CLOCK_SIZE,
+    borderRadius: CLOCK_CENTER,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
-    ...theme.shadow.sm,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  ringProgress: {
+  clockFaceUrgent: {
+    borderColor: theme.colors.danger,
+    backgroundColor: theme.colors.dangerMuted,
+  },
+  tick: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    height: '100%',
-    opacity: 0.15,
+    width: 3,
+    height: 8,
+    borderRadius: 2,
   },
-  ringInner: {
+  centerDisc: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  clockTime: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: theme.colors.text,
+    fontVariant: ['tabular-nums'],
+    fontFamily: theme.font.mono,
+    lineHeight: 24,
+  },
+  clockUnit: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginTop: -1,
+  },
+  inline: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  seconds: {
-    fontSize: 32,
+  inlineTime: {
+    fontSize: 13,
     fontWeight: '800',
     color: theme.colors.text,
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,
   },
-  secondsUrgent: {
+  urgent: {
     color: theme.colors.danger,
   },
-  unit: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 2,
-  },
-  caption: {
-    marginTop: theme.spacing.sm,
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    fontWeight: '500',
+  urgentMuted: {
+    color: theme.colors.danger,
+    opacity: 0.75,
   },
 });

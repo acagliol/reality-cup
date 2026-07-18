@@ -7,9 +7,9 @@ interface TabBarProps {
   onChange: (tab: TabId) => void;
 }
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'games', label: 'Markets', icon: '📊' },
-  { id: 'profile', label: 'Profile', icon: '👤' },
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'games', label: 'Markets' },
+  { id: 'profile', label: 'Profile' },
 ];
 
 export function TabBar({ activeTab, onChange }: TabBarProps) {
@@ -20,12 +20,11 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
         return (
           <Pressable
             key={tab.id}
-            style={styles.tab}
+            style={[styles.tab, active && styles.tabActive]}
             onPress={() => onChange(tab.id)}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
           >
-            <Text style={[styles.icon, active && styles.iconActive]}>{tab.icon}</Text>
             <Text style={[styles.label, active && styles.labelActive]}>{tab.label}</Text>
           </Pressable>
         );
@@ -41,30 +40,27 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.md,
-    ...theme.shadow.md,
+    paddingBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
-    gap: 2,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.radius.full,
   },
-  icon: {
-    fontSize: 20,
-    opacity: 0.45,
-  },
-  iconActive: {
-    opacity: 1,
+  tabActive: {
+    backgroundColor: theme.colors.accent,
   },
   label: {
     color: theme.colors.textMuted,
-    fontWeight: '600',
-    fontSize: 11,
+    fontWeight: '700',
+    fontSize: 14,
   },
   labelActive: {
-    color: theme.colors.text,
+    color: theme.colors.accentText,
     fontWeight: '800',
   },
 });

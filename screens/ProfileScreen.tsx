@@ -1,18 +1,23 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useApp } from '../context/AppContext';
+import { formatRbp } from '../lib/scoring';
 import { theme } from '../lib/theme';
 
 export function ProfileScreen() {
   const { playerName, gameHistory, navigate } = useApp();
 
   const completedGames = gameHistory;
+  const bestScore = completedGames.length
+    ? Math.max(...completedGames.map((g) => g.totalScore))
+    : 0;
 
   return (
     <View style={styles.container}>
       <ScreenHeader
         title="Analyst profile"
         subtitle={`Forecasting as ${playerName ?? 'Anonymous'}`}
+        totalRbp={completedGames.length > 0 ? bestScore : undefined}
       />
 
       <Pressable
@@ -22,27 +27,25 @@ export function ProfileScreen() {
         <Text style={styles.trophyIcon}>🏆</Text>
         <View style={styles.trophyBody}>
           <Text style={styles.trophyTitle}>Trophy cabinet</Text>
-          <Text style={styles.trophySub}>Your placement in each market</Text>
+          <Text style={styles.trophySub}>Podium placements & cash prizes</Text>
         </View>
-        <Text style={styles.trophyChevron}>›</Text>
+        <Text style={styles.trophyChevron}>→</Text>
       </Pressable>
 
       <View style={styles.stats}>
+        <View style={[styles.statBox, styles.statBoxHighlight]}>
+          <Text style={styles.statNum}>
+            {completedGames.length > 0 ? formatRbp(bestScore) : '—'}
+          </Text>
+          <Text style={styles.statLabel}>Best RBP</Text>
+        </View>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{completedGames.length}</Text>
           <Text style={styles.statLabel}>Sessions</Text>
         </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNum}>
-            {completedGames.length
-              ? Math.max(...completedGames.map((g) => g.totalScore))
-              : 0}
-          </Text>
-          <Text style={styles.statLabel}>Best score</Text>
-        </View>
       </View>
 
-      <Text style={styles.section}>Session history</Text>
+      <Text style={styles.section}>Track Your Forecasts</Text>
 
       <FlatList
         data={completedGames}
@@ -56,13 +59,20 @@ export function ProfileScreen() {
             style={styles.card}
             onPress={() => navigate({ name: 'game-history', gameId: item.id })}
           >
+            <View style={styles.cardTop}>
+              <View style={styles.openBadge}>
+                <View style={styles.openDot} />
+                <Text style={styles.openText}>SETTLED</Text>
+              </View>
+              <Text style={styles.editLink}>View →</Text>
+            </View>
             <View style={styles.cardRow}>
               <Text style={styles.cardTitle}>{item.categoryName}</Text>
-              <Text style={styles.score}>{item.totalScore}</Text>
+              <Text style={styles.score}>{formatRbp(item.totalScore)}</Text>
             </View>
             <Text style={styles.cardMeta}>
               {new Date(item.completedAt ?? item.startedAt).toLocaleDateString()} ·{' '}
-              {item.rounds.length} rounds
+              {item.rounds.length} images
             </Text>
           </Pressable>
         )}
@@ -106,9 +116,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   trophyChevron: {
-    fontSize: 28,
-    color: theme.colors.textMuted,
-    fontWeight: '300',
+    fontSize: 18,
+    color: theme.colors.textSecondary,
+    fontWeight: '700',
   },
   stats: {
     flexDirection: 'row',
@@ -124,7 +134,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: theme.colors.border,
-    ...theme.shadow.sm,
+  },
+  statBoxHighlight: {
+    backgroundColor: theme.colors.accentMuted,
+    borderColor: theme.colors.accent,
   },
   statNum: {
     color: theme.colors.text,
@@ -137,18 +150,16 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: 11,
     marginTop: 4,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   section: {
     color: theme.colors.text,
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '800',
     paddingHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   list: {
     paddingHorizontal: theme.spacing.xl,
@@ -156,11 +167,40 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    ...theme.shadow.sm,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  openBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  openDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.textMuted,
+  },
+  openText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textMuted,
+    letterSpacing: 0.5,
+  },
+  editLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
   },
   cardRow: {
     flexDirection: 'row',
@@ -171,12 +211,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontWeight: '700',
     fontSize: 15,
+    flex: 1,
   },
   score: {
     color: theme.colors.text,
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,
+    fontSize: 16,
   },
   cardMeta: {
     color: theme.colors.textMuted,

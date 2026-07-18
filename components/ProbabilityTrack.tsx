@@ -19,7 +19,7 @@ export function ProbabilityTrack({
   highlight,
 }: ProbabilityTrackProps) {
   const cat = useCategoryTheme();
-  const trackColor = color ?? cat.primary;
+  const trackColor = color ?? theme.colors.accent;
 
   return (
     <View style={[styles.container, highlight && styles.highlight]}>

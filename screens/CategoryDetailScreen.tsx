@@ -2,21 +2,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LeaderboardSheet } from '../components/LeaderboardSheet';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { useApp } from '../context/AppContext';
 import { getCategoryById } from '../lib/mock/data';
 import { createGameSession, getBestScoreForCategory } from '../lib/services/gameService';
 import { fetchCategoryLeaderboard } from '../lib/services/leaderboardService';
 import { theme } from '../lib/theme';
 import type { CategoryLeaderboard } from '../types/game';
-import { ACCURACY_WEIGHT, MAX_GAME_SCORE, ROUND_TIME_SECONDS, ROUNDS_PER_GAME, SPEED_WEIGHT } from '../types/game';
+import { ROUND_TIME_SECONDS, ROUNDS_PER_GAME } from '../types/game';
 
 interface CategoryDetailScreenProps {
   categoryId: string;
 }
 
 export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) {
-  const cat = useCategoryTheme();
   const { playerName, goBack, navigate, setActiveGame, abandonActiveGame, gameHistory } =
     useApp();
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -61,56 +59,49 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: cat.heroBg }]}>
+    <View style={styles.container}>
       <ScreenHeader
         title={category.name}
         subtitle={category.description}
         onBack={goBack}
-        accentColor={cat.primary}
+        totalRbp={bestScore > 0 ? bestScore : undefined}
       />
 
       <View style={styles.body}>
-        <View style={[styles.hero, { borderColor: cat.primaryMuted }]}>
-          <View style={[styles.iconCircle, { backgroundColor: cat.primaryMuted }]}>
-            <Text style={styles.heroIcon}>{category.icon}</Text>
+        <View style={styles.hero}>
+          <View style={styles.closingBadge}>
+            <View style={styles.closingDot} />
+            <Text style={styles.closingText}>OPEN</Text>
           </View>
-          <Text style={[styles.heroStat, { color: cat.primary }]}>
+
+          <Text style={styles.heroIcon}>{category.icon}</Text>
+          <Text style={styles.heroStat}>
             {ROUNDS_PER_GAME} × {ROUND_TIME_SECONDS}s
           </Text>
           <Text style={styles.heroText}>Probability forecasts per session</Text>
           {bestScore > 0 && (
-            <Text style={[styles.bestScore, { color: cat.primary }]}>
-              Your best: {bestScore} pts
-            </Text>
+            <Text style={styles.bestScore}>Your best RBP: {bestScore}</Text>
           )}
         </View>
 
         <View style={styles.rules}>
-          <Text style={styles.rulesTitle}>Scoring model</Text>
+          <Text style={styles.rulesTitle}>Scoring</Text>
+          <Text style={styles.rule}>• Submit 1–99% probability the image is fake</Text>
+          <Text style={styles.rule}>• Ground truth is Real (0) or Fake (100)</Text>
+          <Text style={styles.rule}>• Brier = (p − y)² — lower is better</Text>
+          <Text style={styles.rule}>• RBP vs 45% crowd + 55% AI models</Text>
+          <Text style={styles.rule}>• Must beat the benchmark to stay positive</Text>
           <Text style={styles.rule}>• {ROUND_TIME_SECONDS}s countdown — lock before zero</Text>
-          <Text style={styles.rule}>
-            • {Math.round(ACCURACY_WEIGHT * 100)}% calibration (100 − |your guess − truth|)
-          </Text>
-          <Text style={styles.rule}>
-            • {Math.round(SPEED_WEIGHT * 100)}% speed bonus from ms remaining
-          </Text>
-          <Text style={styles.rule}>• Max {MAX_GAME_SCORE} pts per session ({ROUNDS_PER_GAME} rounds)</Text>
-          <Text style={styles.rule}>• Compare vs Codex, Cursor & Gemini sponsor models after</Text>
+          <Text style={styles.rule}>• Compare vs Codex, Cursor & Gemini after</Text>
         </View>
 
         <View style={styles.actions}>
-          <Pressable
-            style={[styles.leaderboardButton, { borderColor: cat.primary }]}
-            onPress={() => setLeaderboardOpen(true)}
-          >
-            <Text style={[styles.leaderboardText, { color: cat.primary }]}>Leaderboard</Text>
+          <Pressable style={styles.leaderboardButton} onPress={() => setLeaderboardOpen(true)}>
+            <Text style={styles.leaderboardText}>Global Leaderboard</Text>
           </Pressable>
 
-          <Pressable
-            style={[styles.startButton, { backgroundColor: cat.primary }]}
-            onPress={startGame}
-          >
-            <Text style={styles.startText}>Begin forecasting</Text>
+          <Pressable style={styles.startButton} onPress={startGame}>
+            <Text style={styles.startText}>Begin Forecasting →</Text>
           </Pressable>
         </View>
       </View>
@@ -120,7 +111,7 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
         title={category.name}
         subtitle={
           bestScore > 0
-            ? `Your best score: ${bestScore} pts`
+            ? `Your best RBP: ${bestScore}`
             : 'Complete a session to appear on the board'
         }
         data={leaderboardData}
@@ -134,6 +125,7 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.bg,
   },
   body: {
     flex: 1,
@@ -147,24 +139,41 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xxxl,
     alignItems: 'center',
     borderWidth: 1,
+    borderColor: theme.colors.border,
     ...theme.shadow.md,
   },
-  iconCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+  closingBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: theme.colors.accentMuted,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: theme.radius.full,
     marginBottom: theme.spacing.lg,
   },
+  closingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.accent,
+  },
+  closingText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.text,
+    letterSpacing: 0.6,
+  },
   heroIcon: {
-    fontSize: 44,
+    fontSize: 52,
+    marginBottom: theme.spacing.md,
   },
   heroStat: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,
+    color: theme.colors.text,
   },
   heroText: {
     color: theme.colors.textMuted,
@@ -176,6 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
+    color: theme.colors.textSecondary,
   },
   rules: {
     backgroundColor: theme.colors.surface,
@@ -202,26 +212,29 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   leaderboardButton: {
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.full,
     paddingVertical: theme.spacing.md,
     alignItems: 'center',
     borderWidth: 2,
+    borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
   leaderboardText: {
     fontSize: 16,
     fontWeight: '800',
+    color: theme.colors.text,
   },
   startButton: {
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.full,
     paddingVertical: theme.spacing.lg,
     alignItems: 'center',
+    backgroundColor: theme.colors.accent,
     ...theme.shadow.sm,
   },
   startText: {
-    color: theme.colors.textInverse,
+    color: theme.colors.accentText,
     fontSize: 17,
     fontWeight: '800',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
 });

@@ -1,6 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { CategoryLeaderboard, LeaderboardEntry } from '../types/game';
-import { useCategoryTheme } from '../context/CategoryThemeContext';
 import { theme } from '../lib/theme';
 
 interface LeaderboardListProps {
@@ -15,28 +14,22 @@ function LeaderboardRow({
   entry: LeaderboardEntry;
   compact?: boolean;
 }) {
-  const cat = useCategoryTheme();
-
   return (
     <View
       style={[
         styles.row,
         compact && styles.rowCompact,
-        entry.isCurrentPlayer && {
-          borderColor: cat.primary,
-          backgroundColor: cat.primaryMuted,
-        },
+        entry.isCurrentPlayer && styles.rowYou,
       ]}
     >
-      <Text style={[styles.rank, entry.rank <= 3 && { color: cat.primary }]}>#{entry.rank}</Text>
-      <Text
-        style={[styles.name, entry.isCurrentPlayer && { color: cat.primary }]}
-        numberOfLines={1}
-      >
+      <Text style={[styles.rank, entry.rank <= 3 && styles.rankTop]}>#{entry.rank}</Text>
+      <Text style={[styles.name, entry.isCurrentPlayer && styles.nameYou]} numberOfLines={1}>
         {entry.playerName}
         {entry.isCurrentPlayer ? ' (you)' : ''}
       </Text>
-      <Text style={[styles.score, { color: cat.primary }]}>{entry.score}</Text>
+      <Text style={[styles.score, { color: theme.colors.text }]}>
+        {Number.isFinite(entry.score) ? entry.score.toFixed(2) : '—'}
+      </Text>
     </View>
   );
 }
@@ -44,6 +37,12 @@ function LeaderboardRow({
 export function LeaderboardList({ data, compact }: LeaderboardListProps) {
   return (
     <View>
+      <View style={styles.headerRow}>
+        <Text style={[styles.headerCell, styles.rankCol]}>#</Text>
+        <Text style={[styles.headerCell, styles.nameCol]}>Forecaster</Text>
+        <Text style={[styles.headerCell, styles.scoreCol]}>RBP</Text>
+      </View>
+
       {data.topEntries.map((entry) => (
         <LeaderboardRow key={`top-${entry.rank}-${entry.playerName}`} entry={entry} compact={compact} />
       ))}
@@ -65,13 +64,32 @@ export function LeaderboardList({ data, compact }: LeaderboardListProps) {
 export function LeaderboardLoading() {
   return (
     <View style={styles.loading}>
-      <ActivityIndicator color={theme.colors.textMuted} />
+      <ActivityIndicator color={theme.colors.text} />
       <Text style={styles.loadingText}>Loading leaderboard…</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    marginBottom: theme.spacing.sm,
+  },
+  headerCell: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  rankCol: { width: 36 },
+  nameCol: { flex: 1 },
+  scoreCol: { width: 72, textAlign: 'right' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -85,22 +103,35 @@ const styles = StyleSheet.create({
   rowCompact: {
     backgroundColor: theme.colors.surface,
   },
+  rowYou: {
+    borderColor: theme.colors.accent,
+    backgroundColor: theme.colors.accentMuted,
+  },
   rank: {
     width: 36,
     fontWeight: '800',
     color: theme.colors.textMuted,
     fontVariant: ['tabular-nums'],
   },
+  rankTop: {
+    color: theme.colors.text,
+  },
   name: {
     flex: 1,
     fontWeight: '600',
     color: theme.colors.text,
   },
-  score: {
+  nameYou: {
     fontWeight: '800',
-    fontSize: 16,
+  },
+  score: {
+    width: 72,
+    textAlign: 'right',
+    fontWeight: '800',
+    fontSize: 15,
     fontVariant: ['tabular-nums'],
     fontFamily: theme.font.mono,
+    color: theme.colors.text,
   },
   divider: {
     flexDirection: 'row',

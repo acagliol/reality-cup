@@ -25,7 +25,7 @@ export function NameModal({ visible, onSave }: NameModalProps) {
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.eyebrow}>Probability Cup</Text>
+          <Text style={styles.eyebrow}>Reality Cup</Text>
           <Text style={styles.title}>Enter your analyst name</Text>
           <Text style={styles.subtitle}>Used on leaderboards and session history.</Text>
 
@@ -46,7 +46,7 @@ export function NameModal({ visible, onSave }: NameModalProps) {
           {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable style={styles.button} onPress={handleSave}>
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>Continue →</Text>
           </Pressable>
         </View>
       </View>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     color: theme.colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: theme.colors.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     marginBottom: theme.spacing.sm,
   },
@@ -87,10 +87,11 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: 14,
     marginBottom: theme.spacing.xl,
+    lineHeight: 20,
   },
   input: {
     backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: theme.radius.sm,
+    borderRadius: theme.radius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
     color: theme.colors.text,
@@ -105,14 +106,14 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: theme.spacing.xl,
-    backgroundColor: theme.colors.text,
-    borderRadius: theme.radius.sm,
-    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.accent,
+    borderRadius: theme.radius.full,
+    paddingVertical: theme.spacing.lg,
     alignItems: 'center',
   },
   buttonText: {
-    color: theme.colors.textInverse,
-    fontWeight: '700',
+    color: theme.colors.accentText,
+    fontWeight: '800',
     fontSize: 16,
   },
 });

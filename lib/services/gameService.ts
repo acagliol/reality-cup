@@ -47,10 +47,11 @@ export function submitRoundAnswer(
   const round = game.rounds[roundIndex];
   if (!round) throw new Error('Round not found');
 
-  const { accuracyScore, speedScore, roundScore } = scoreRound(
+  const { userBrier, crowdBrier, modelBrier, benchmarkBrier, roundScore } = scoreRound(
     answerValue,
     round.truthValue,
-    responseTimeMs,
+    round.crowdMean,
+    round.aiAnswers,
   );
 
   const updatedRounds = [...game.rounds];
@@ -59,8 +60,10 @@ export function submitRoundAnswer(
     playerAnswer: {
       answerValue,
       responseTimeMs,
-      accuracyScore,
-      speedScore,
+      userBrier,
+      crowdBrier,
+      modelBrier,
+      benchmarkBrier,
       roundScore,
     },
   };
@@ -78,8 +81,19 @@ export async function completeGame(game: GameSession): Promise<GameSession> {
     status: 'completed',
     completedAt: new Date().toISOString(),
   };
-  await upsertGame(completed);
-  await syncCompletedGame(completed);
+
+  try {
+    await upsertGame(completed);
+  } catch (err) {
+    console.warn('Local save failed (game still complete in memory):', err);
+  }
+
+  try {
+    await syncCompletedGame(completed);
+  } catch (err) {
+    console.warn('Remote sync failed (game still saved locally):', err);
+  }
+
   return completed;
 }
 
