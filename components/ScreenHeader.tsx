@@ -24,7 +24,7 @@ export function ScreenHeader({ title, subtitle, onBack, accentColor, totalRbp }:
         )}
         {totalRbp !== undefined && Number.isFinite(totalRbp) && (
           <View style={styles.rbpBox}>
-            <Text style={styles.rbpLabel}>TOTAL RBP</Text>
+            <Text style={styles.rbpLabel}>TOTAL SCORE</Text>
             <Text style={styles.rbpValue}>{totalRbp.toFixed(2)}</Text>
           </View>
         )}

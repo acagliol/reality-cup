@@ -27,7 +27,7 @@ export function ScreenHeader({ title, subtitle, onBack, accentColor, totalRbp }:
         )}
         {totalRbp !== undefined && Number.isFinite(totalRbp) && (
           <div className={styles.rbpBox}>
-            <span className={styles.rbpLabel}>TOTAL RBP</span>
+            <span className={styles.rbpLabel}>TOTAL SCORE</span>
             <span className={`${styles.rbpValue} mono`}>{totalRbp.toFixed(2)}</span>
           </div>
         )}

@@ -71,7 +71,7 @@ export function buildMockRoundContent() {
         id,
         category_id: category.id,
         image_url: IMAGE_POOL[(i + category.sortOrder) % IMAGE_POOL.length],
-        truth_value: seededValue(id, 5, 95),
+        truth_value: seededValue(id, 0, 100),
         sort_order: i + 1,
         active: true,
       });

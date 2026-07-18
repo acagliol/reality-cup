@@ -102,17 +102,16 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
           </span>
           <span className={styles.heroText}>Probability forecasts per session</span>
           {bestScore > 0 && (
-            <span className={`${styles.bestScore} mono`}>Your best RBP: {bestScore}</span>
+            <span className={`${styles.bestScore} mono`}>Your best score: {bestScore}</span>
           )}
         </div>
 
         <div className={styles.rules}>
           <span className={styles.rulesTitle}>Scoring</span>
-          <span className={styles.rule}>• Submit 1–99% probability the image is fake</span>
+          <span className={styles.rule}>• Submit 0–100% probability the image is fake</span>
           <span className={styles.rule}>• Ground truth is Real (0) or Fake (100)</span>
-          <span className={styles.rule}>• Brier = (p − y)² — lower is better</span>
-          <span className={styles.rule}>• RBP vs 45% crowd + 55% AI models</span>
-          <span className={styles.rule}>• Must beat the benchmark to stay positive</span>
+          <span className={styles.rule}>• Round score = 70% accuracy + 30% speed</span>
+          <span className={styles.rule}>• Faster answers earn more speed points</span>
           <span className={styles.rule}>• {ROUND_TIME_SECONDS}s countdown — lock before zero</span>
           <span className={styles.rule}>• Compare vs Codex, Cursor & Gemini after</span>
         </div>
@@ -142,7 +141,7 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
         title={category.name}
         subtitle={
           bestScore > 0
-            ? `Your best RBP: ${bestScore}`
+            ? `Your best score: ${bestScore}`
             : 'Complete a session to appear on the board'
         }
         data={leaderboardData}

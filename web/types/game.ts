@@ -36,10 +36,8 @@ export interface CrowdStats {
 export interface PlayerAnswer {
   answerValue: number;
   responseTimeMs: number;
-  userBrier: number;
-  crowdBrier: number;
-  modelBrier: number;
-  benchmarkBrier: number;
+  accuracyScore: number;
+  speedScore: number;
   roundScore: number;
 }
 

@@ -2,8 +2,8 @@
 
 export const PER_SIDE = 50;
 
-export const TRUTH_REAL = 5;
-export const TRUTH_FAKE = 95;
+export const TRUTH_REAL = 0;
+export const TRUTH_FAKE = 100;
 
 /** Shown on category cards and detail screens — gameplay only, not theme copy. */
 export const HOW_TO_PLAY =

@@ -101,7 +101,23 @@ export async function fetchPlatformInsights(): Promise<PlatformInsights> {
   if (aiError) throw new Error(`Failed to load AI answers: ${aiError.message}`);
   if (crowdError) throw new Error(`Failed to load crowd stats: ${crowdError.message}`);
 
-  const roundList = (rounds ?? []) as RoundRow[];
+  const roundList: RoundRow[] = (rounds ?? []).map((raw) => {
+    const row = raw as {
+      id: string;
+      category_id: string;
+      image_url: string;
+      truth_value: number;
+      categories: { name: string; icon: string } | { name: string; icon: string }[] | null;
+    };
+    const categories = Array.isArray(row.categories) ? row.categories[0] ?? null : row.categories;
+    return {
+      id: row.id,
+      category_id: row.category_id,
+      image_url: row.image_url,
+      truth_value: row.truth_value,
+      categories,
+    };
+  });
   const aiByRound = new Map<string, AiRow[]>();
   for (const row of (aiRows ?? []) as AiRow[]) {
     const list = aiByRound.get(row.round_content_id) ?? [];

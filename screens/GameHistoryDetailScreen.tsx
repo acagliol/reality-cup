@@ -26,7 +26,7 @@ export function GameHistoryDetailScreen({ gameId }: GameHistoryDetailScreenProps
     <View style={styles.container}>
       <ScreenHeader
         title={game.categoryName}
-        subtitle={`${formatRbp(game.totalScore)} RBP · ${game.status === 'completed' ? 'Completed' : 'In progress'}`}
+        subtitle={`${formatRbp(game.totalScore)} pts · ${game.status === 'completed' ? 'Completed' : 'In progress'}`}
         onBack={goBack}
       />
 

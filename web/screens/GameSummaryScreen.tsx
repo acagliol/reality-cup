@@ -82,7 +82,7 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
             <span className={`${styles.statValue} mono`}>
               {Number.isFinite(game.totalScore) ? formatRbp(game.totalScore) : '—'}
             </span>
-            <span className={styles.statLabel}>Total RBP</span>
+            <span className={styles.statLabel}>Total score</span>
           </div>
           <div className={styles.stat}>
             <span className={`${styles.statValue} mono`}>#{playerRank ?? '—'}</span>

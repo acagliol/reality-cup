@@ -39,20 +39,16 @@ export function ProbabilitySlider({
       </View>
 
       <View style={styles.sliderWrap}>
-        <View style={styles.trackBg}>
-          <View style={styles.trackReal} />
-          <View style={styles.trackFake} />
-        </View>
         <Slider
           style={styles.slider}
-          minimumValue={1}
-          maximumValue={99}
+          minimumValue={0}
+          maximumValue={100}
           step={1}
           value={value}
           onValueChange={onChange}
           disabled={disabled}
-          minimumTrackTintColor="transparent"
-          maximumTrackTintColor="transparent"
+          minimumTrackTintColor={REAL_COLOR}
+          maximumTrackTintColor={FAKE_COLOR}
           thumbTintColor={theme.colors.surface}
         />
       </View>
@@ -120,26 +116,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   sliderWrap: {
-    position: 'relative',
     height: 44,
     justifyContent: 'center',
-  },
-  trackBg: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 10,
-    borderRadius: theme.radius.full,
-    overflow: 'hidden',
-    flexDirection: 'row',
-  },
-  trackReal: {
-    flex: 1,
-    backgroundColor: REAL_COLOR,
-  },
-  trackFake: {
-    flex: 1,
-    backgroundColor: FAKE_COLOR,
   },
   slider: {
     width: '100%',

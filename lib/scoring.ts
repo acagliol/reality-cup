@@ -1,22 +1,8 @@
-import type { AiAnswer } from '../types/game';
-
-/** Weight crowd in composite benchmark (rest = models). */
-export const BENCHMARK_CROWD_WEIGHT = 0.45;
-export const BENCHMARK_MODEL_WEIGHT = 0.55;
-
-/**
- * Must beat the composite benchmark by this much (Brier units) to break even.
- * Makes ~top half of forecasts positive in typical sessions.
- */
-export const RBP_HARDNESS_MARGIN = 0.015;
-
-export const RBP_SCALE = 100;
+import { ACCURACY_WEIGHT, ROUND_TIME_MS, SPEED_WEIGHT } from '../types/game';
 
 export interface RoundScoreBreakdown {
-  userBrier: number;
-  crowdBrier: number;
-  modelBrier: number;
-  benchmarkBrier: number;
+  accuracyScore: number;
+  speedScore: number;
   roundScore: number;
 }
 
@@ -38,82 +24,41 @@ export function truthLabel(truthValue: number): 'Real' | 'Fake' {
   return truthToBinary(truthValue) === 1 ? 'Fake' : 'Real';
 }
 
-/** Player/model probability of fake from 1–99 submission. */
-export function answerToProbability(answerValue: number): number {
-  return clamp(Math.round(answerValue), 1, 99) / 100;
-}
-
-/** Brier score — lower is better. y ∈ {0, 1}. */
-export function brierScore(probabilityFake: number, y: 0 | 1): number {
-  const p = clamp(probabilityFake, 0.01, 0.99);
-  return (p - y) ** 2;
-}
-
-function meanModelBrier(aiAnswers: AiAnswer[], y: 0 | 1): number {
-  if (aiAnswers.length === 0) return 0;
-  const total = aiAnswers.reduce(
-    (sum, ai) => sum + brierScore(answerToProbability(ai.answerValue), y),
-    0,
-  );
-  return total / aiAnswers.length;
-}
-
-function compositeBenchmarkBrier(crowdBrier: number, modelBrier: number): number {
-  return BENCHMARK_CROWD_WEIGHT * crowdBrier + BENCHMARK_MODEL_WEIGHT * modelBrier;
-}
-
 /**
- * Relative Brier Points for one image vs crowd + AI models.
- *
- *   user_brier      = (p − y)²
- *   crowd_brier     = (crowd_p − y)²
- *   model_brier     = mean((model_p − y)²)
- *   benchmark_brier = 0.45·crowd + 0.55·models
- *   RBP             = (benchmark − user − margin) × 100
- *
- * y = 1 fake, y = 0 real. Only ~top half of players beat the margin each round.
+ * Simple per-round score: 70% accuracy (closeness to truth) + 30% speed (time left).
+ * Both components are 0–100; round score is 0–100.
  */
 export function scoreRound(
   answerValue: number,
   truthValue: number,
-  crowdMean: number,
-  aiAnswers: AiAnswer[],
+  responseTimeMs: number,
 ): RoundScoreBreakdown {
-  const y = truthToBinary(truthValue);
-  const userBrier = brierScore(answerToProbability(answerValue), y);
-  const crowdBrier = brierScore(answerToProbability(crowdMean), y);
-  const modelBrier = meanModelBrier(aiAnswers, y);
-  const benchmarkBrier = compositeBenchmarkBrier(crowdBrier, modelBrier);
+  const answer = clamp(Math.round(answerValue), 0, 100);
+  const truth = clamp(Math.round(truthValue), 0, 100);
 
-  const rawRbp = (benchmarkBrier - userBrier - RBP_HARDNESS_MARGIN) * RBP_SCALE;
-  const roundScore = Math.round(rawRbp * 10) / 10;
+  const accuracyScore = Math.max(0, 100 - Math.abs(answer - truth));
+  const elapsed = clamp(responseTimeMs, 0, ROUND_TIME_MS);
+  const speedScore = Math.round(((ROUND_TIME_MS - elapsed) / ROUND_TIME_MS) * 100);
 
-  return {
-    userBrier: round4(userBrier),
-    crowdBrier: round4(crowdBrier),
-    modelBrier: round4(modelBrier),
-    benchmarkBrier: round4(benchmarkBrier),
-    roundScore,
-  };
-}
+  const roundScore = Math.round(
+    ACCURACY_WEIGHT * accuracyScore + SPEED_WEIGHT * speedScore,
+  );
 
-function round4(n: number): number {
-  return Math.round(n * 10_000) / 10_000;
+  return { accuracyScore, speedScore, roundScore };
 }
 
 export function sumRoundScores(roundScores: number[]): number {
-  return Math.round(roundScores.reduce((total, score) => total + score, 0) * 10) / 10;
+  return roundScores.reduce((total, score) => total + score, 0);
 }
 
+export function formatScore(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  return String(Math.round(value));
+}
+
+/** @deprecated Use formatScore */
 export function formatRbp(value: number): string {
-  if (!Number.isFinite(value)) return '—';
-  const rounded = Math.round(value * 10) / 10;
-  return rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1);
-}
-
-export function formatBrier(value: number): string {
-  if (!Number.isFinite(value)) return '—';
-  return value.toFixed(4);
+  return formatScore(value);
 }
 
 export function formatCountdown(remainingMs: number): string {

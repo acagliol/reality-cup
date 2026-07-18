@@ -57,11 +57,10 @@ export function submitRoundAnswer(
   const round = game.rounds[roundIndex];
   if (!round) throw new Error('Round not found');
 
-  const { userBrier, crowdBrier, modelBrier, benchmarkBrier, roundScore } = scoreRound(
+  const { accuracyScore, speedScore, roundScore } = scoreRound(
     answerValue,
     round.truthValue,
-    round.crowdMean,
-    round.aiAnswers,
+    responseTimeMs,
   );
 
   const updatedRounds = [...game.rounds];
@@ -70,10 +69,8 @@ export function submitRoundAnswer(
     playerAnswer: {
       answerValue,
       responseTimeMs,
-      userBrier,
-      crowdBrier,
-      modelBrier,
-      benchmarkBrier,
+      accuracyScore,
+      speedScore,
       roundScore,
     },
   };

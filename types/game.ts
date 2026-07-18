@@ -37,10 +37,8 @@ export interface CrowdStats {
 export interface PlayerAnswer {
   answerValue: number;
   responseTimeMs: number;
-  userBrier: number;
-  crowdBrier: number;
-  modelBrier: number;
-  benchmarkBrier: number;
+  accuracyScore: number;
+  speedScore: number;
   roundScore: number;
 }
 
@@ -104,7 +102,5 @@ export const ROUND_TIME_SECONDS = 10;
 export const ROUND_TIME_MS = ROUND_TIME_SECONDS * 1000;
 export const LEADERBOARD_TOP_N = 10;
 
-/** @deprecated Legacy accuracy/speed weights — scoring is now Brier RBP only. */
 export const ACCURACY_WEIGHT = 0.7;
-/** @deprecated Legacy accuracy/speed weights — scoring is now Brier RBP only. */
 export const SPEED_WEIGHT = 0.3;

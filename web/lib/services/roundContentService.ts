@@ -25,6 +25,10 @@ function assertSupabase() {
   return supabase;
 }
 
+function isFakeRow(row: RoundContentRow): boolean {
+  return row.truth_value >= 50;
+}
+
 export async function fetchRoundsForCategory(
   categoryId: string,
   count = ROUNDS_PER_GAME,
@@ -39,12 +43,11 @@ export async function fetchRoundsForCategory(
     .from('round_content')
     .select('id, category_id, image_url, truth_value, sort_order')
     .eq('category_id', categoryId)
-    .eq('active', true)
-    .gt('truth_value', 50);
+    .eq('active', true);
 
   if (error) throw new Error(`Failed to load rounds: ${error.message}`);
   if (!data?.length) {
-    throw new Error(`No fake images found for category "${categoryId}".`);
+    throw new Error(`No images found for category "${categoryId}".`);
   }
 
   return pickRoundsFromRows(data as RoundContentRow[], count, categoryId);
@@ -57,12 +60,11 @@ async function fetchRandomMixedRounds(count: number): Promise<RoundContent[]> {
     .from('round_content')
     .select('id, category_id, image_url, truth_value, sort_order')
     .in('category_id', [...POOL_CATEGORY_IDS])
-    .eq('active', true)
-    .gt('truth_value', 50);
+    .eq('active', true);
 
   if (error) throw new Error(`Failed to load random mix: ${error.message}`);
   if (!data?.length) {
-    throw new Error('No fake images found for Random Mix. Seed category pools first.');
+    throw new Error('No images found for Random Mix. Seed category pools first.');
   }
 
   return pickRoundsFromRows(data as RoundContentRow[], count, RANDOM_CATEGORY_ID);
@@ -76,7 +78,7 @@ function pickRoundsFromRows(
   const deduped = dedupeRowsByImageUrl(rows);
   if (deduped.length < count) {
     throw new Error(
-      `Category "${categoryId}" has ${deduped.length} unique fake images but needs at least ${count} to play.`,
+      `Category "${categoryId}" has ${deduped.length} unique images but needs at least ${count} to play.`,
     );
   }
 
@@ -128,8 +130,8 @@ export async function fetchCrowdMeanForRound(roundContentId: string): Promise<nu
 function shuffleRoundPool(rows: RoundContentRow[], count: number): RoundContentRow[] {
   if (rows.length <= count) return shuffle([...rows]);
 
-  const real = rows.filter((r) => r.truth_value <= 50);
-  const fake = rows.filter((r) => r.truth_value > 50);
+  const real = rows.filter((r) => !isFakeRow(r));
+  const fake = rows.filter((r) => isFakeRow(r));
 
   if (real.length === 0 || fake.length === 0) {
     return shuffle([...rows]).slice(0, count);
@@ -143,7 +145,7 @@ function shuffleRoundPool(rows: RoundContentRow[], count: number): RoundContentR
 
   const addFrom = (source: RoundContentRow[], max: number) => {
     let added = 0;
-    for (const row of source) {
+    for (const row of shuffle(source)) {
       if (added >= max) break;
       if (usedUrls.has(row.image_url)) continue;
       picked.push(row);
@@ -152,8 +154,8 @@ function shuffleRoundPool(rows: RoundContentRow[], count: number): RoundContentR
     }
   };
 
-  addFrom(shuffle(real), targetReal);
-  addFrom(shuffle(fake), targetFake);
+  addFrom(real, targetReal);
+  addFrom(fake, targetFake);
 
   if (picked.length < count) {
     const rest = shuffle(rows.filter((r) => !usedUrls.has(r.image_url)));

@@ -36,12 +36,17 @@ export function ProbabilitySlider({
       </div>
 
       <div className={styles.sliderWrap}>
-        <div className={styles.trackBg} />
+        <div
+          className={styles.trackBg}
+          style={{
+            background: `linear-gradient(to right, #16a34a 0%, #16a34a ${value}%, #1a1919 ${value}%, #1a1919 100%)`,
+          }}
+        />
         <input
           type="range"
           className={styles.slider}
-          min={1}
-          max={99}
+          min={0}
+          max={100}
           step={1}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}

@@ -6,9 +6,8 @@ import { CategoryThemeProvider } from '@/context/CategoryThemeContext';
 import { getSponsorModelById, formatModelSubtitle } from '@/lib/ai/sponsorModels';
 import {
   displayTruthValue,
-  formatBrier,
   formatMs,
-  formatRbp,
+  formatScore,
   truthLabel,
 } from '@/lib/scoring';
 import { getCategoryTheme } from '@/lib/theme';
@@ -37,31 +36,23 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
 
       <div className={styles.scoreRow}>
         <div className={styles.scorePill} style={{ backgroundColor: cat.primaryMuted }}>
-          <span className={styles.scorePillLabel}>RBP</span>
-          <span
-            className={`${styles.scorePillValue} mono`}
-            style={{ color: answer.roundScore >= 0 ? '#16a34a' : '#dc2626' }}
-          >
-            {formatRbp(answer.roundScore)}
+          <span className={styles.scorePillLabel}>Round</span>
+          <span className={`${styles.scorePillValue} mono`} style={{ color: cat.primary }}>
+            {formatScore(answer.roundScore)}
           </span>
         </div>
         <div className={styles.scorePill}>
-          <span className={styles.scorePillLabel}>Your Brier</span>
-          <span className={`${styles.scorePillValue} mono`}>{formatBrier(answer.userBrier)}</span>
+          <span className={styles.scorePillLabel}>Accuracy</span>
+          <span className={`${styles.scorePillValue} mono`}>{formatScore(answer.accuracyScore)}</span>
         </div>
-        <div
-          className={styles.scorePill}
-          style={{ borderColor: cat.primary, borderWidth: 1 }}
-        >
-          <span className={styles.scorePillLabel}>Benchmark</span>
-          <span className={`${styles.scorePillValue} mono`} style={{ color: cat.primary }}>
-            {formatBrier(answer.benchmarkBrier)}
-          </span>
+        <div className={styles.scorePill}>
+          <span className={styles.scorePillLabel}>Speed</span>
+          <span className={`${styles.scorePillValue} mono`}>{formatScore(answer.speedScore)}</span>
         </div>
       </div>
 
       <p className={styles.benchmarkNote}>
-        Benchmark = 45% crowd + 55% AI models · Truth: {truthLabel(round.truthValue)} ({truthDisplay})
+        Truth: {truthLabel(round.truthValue)} ({truthDisplay}) · {formatMs(answer.responseTimeMs)}
       </p>
 
       <ProbabilityTrack label="Your forecast" value={answer.answerValue} highlight />
@@ -132,7 +123,7 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
               <span className={styles.roundTitle}>Round {round.roundNumber}</span>
               {answer ? (
                 <span className={`${styles.roundMeta} mono`}>
-                  {formatRbp(answer.roundScore)} RBP · {formatMs(answer.responseTimeMs)}
+                  {formatScore(answer.roundScore)} pts · {formatMs(answer.responseTimeMs)}
                 </span>
               ) : (
                 <span className={styles.roundMeta}>Not played</span>
@@ -144,18 +135,10 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
             {answer && (
               <div
                 className={styles.pointsBadge}
-                style={{
-                  backgroundColor:
-                    answer.roundScore >= 0 ? '#f7ffde' : '#fee2e2',
-                }}
+                style={{ backgroundColor: cat.primaryMuted }}
               >
-                <span
-                  className={`${styles.pointsBadgeText} mono`}
-                  style={{
-                    color: answer.roundScore >= 0 ? '#16a34a' : '#dc2626',
-                  }}
-                >
-                  {formatRbp(answer.roundScore)}
+                <span className={`${styles.pointsBadgeText} mono`} style={{ color: cat.primary }}>
+                  {formatScore(answer.roundScore)}
                 </span>
               </div>
             )}

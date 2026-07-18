@@ -81,7 +81,7 @@ export function GameSummaryScreen({ gameId }: GameSummaryScreenProps) {
             <Text style={styles.statValue}>
               {Number.isFinite(game.totalScore) ? formatRbp(game.totalScore) : '—'}
             </Text>
-            <Text style={styles.statLabel}>Total RBP</Text>
+            <Text style={styles.statLabel}>Total score</Text>
           </View>
           <View style={styles.stat}>
             <Text style={styles.statValue}>#{playerRank ?? '—'}</Text>

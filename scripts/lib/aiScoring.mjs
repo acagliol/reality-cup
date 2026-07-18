@@ -77,7 +77,7 @@ async function scoreImageWithOpenRouterOnce({ apiKey, openrouterModel, imageUrl,
     body: JSON.stringify({
       model: openrouterModel,
       temperature: 0.1,
-      max_tokens: 64,
+      max_tokens: 128,
       messages: buildVisionMessages(imageUrl),
     }),
   });

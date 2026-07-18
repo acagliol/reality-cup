@@ -50,7 +50,7 @@ export function LeaderboardList({ data, compact }: LeaderboardListProps) {
       <div className={styles.headerRow}>
         <span className={`${styles.headerCell} ${styles.rankCol}`}>#</span>
         <span className={`${styles.headerCell} ${styles.nameCol}`}>Forecaster</span>
-        <span className={`${styles.headerCell} ${styles.scoreCol}`}>RBP</span>
+        <span className={`${styles.headerCell} ${styles.scoreCol}`}>Score</span>
       </div>
 
       {data.topEntries.map((entry) => (

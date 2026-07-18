@@ -39,7 +39,7 @@ export function ProfileScreen() {
           <span className={`${styles.statNum} mono`}>
             {completedGames.length > 0 ? formatRbp(bestScore) : '—'}
           </span>
-          <span className={styles.statLabel}>Best RBP</span>
+          <span className={styles.statLabel}>Best score</span>
         </div>
         <div className={styles.statBox}>
           <span className={`${styles.statNum} mono`}>{completedGames.length}</span>

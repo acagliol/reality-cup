@@ -37,7 +37,7 @@ export function ProfileScreen() {
           <Text style={styles.statNum}>
             {completedGames.length > 0 ? formatRbp(bestScore) : '—'}
           </Text>
-          <Text style={styles.statLabel}>Best RBP</Text>
+          <Text style={styles.statLabel}>Best score</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{completedGames.length}</Text>

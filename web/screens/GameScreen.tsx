@@ -63,7 +63,7 @@ export function GameScreen() {
         timerRef.current = null;
       }
 
-      const clamped = Math.min(99, Math.max(1, Math.round(value)));
+      const clamped = Math.min(100, Math.max(0, Math.round(value)));
       const responseTimeMs = Math.min(Date.now() - roundStartRef.current, ROUND_TIME_MS);
 
       try {

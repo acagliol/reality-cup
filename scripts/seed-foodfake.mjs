@@ -20,8 +20,8 @@ const FOODFAKE_CATEGORIES = [
   'falafel', 'hummus', 'pizza', 'plov', 'ramen', 'salad', 'steak', 'sushi', 'tacos',
 ];
 
-const TRUTH_REAL = 5;
-const TRUTH_FAKE = 95;
+const TRUTH_REAL = 0;
+const TRUTH_FAKE = 100;
 const CATEGORY_ID = 'cat-food';
 const BUCKET = 'round-images';
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);

@@ -7,9 +7,8 @@ import { getSponsorModelById } from '../lib/ai/sponsorModels';
 import { formatModelSubtitle } from '../lib/ai/sponsorModels';
 import {
   displayTruthValue,
-  formatBrier,
   formatMs,
-  formatRbp,
+  formatScore,
   truthLabel,
 } from '../lib/scoring';
 import { getCategoryTheme, theme } from '../lib/theme';
@@ -35,30 +34,23 @@ function RoundDetailContent({ round, categoryId }: { round: GameRound; categoryI
 
       <View style={styles.scoreRow}>
         <View style={[styles.scorePill, { backgroundColor: cat.primaryMuted }]}>
-          <Text style={styles.scorePillLabel}>RBP</Text>
-          <Text
-            style={[
-              styles.scorePillValue,
-              { color: answer.roundScore >= 0 ? theme.colors.success : theme.colors.danger },
-            ]}
-          >
-            {formatRbp(answer.roundScore)}
+          <Text style={styles.scorePillLabel}>Round</Text>
+          <Text style={[styles.scorePillValue, { color: cat.primary }]}>
+            {formatScore(answer.roundScore)}
           </Text>
         </View>
         <View style={styles.scorePill}>
-          <Text style={styles.scorePillLabel}>Your Brier</Text>
-          <Text style={styles.scorePillValue}>{formatBrier(answer.userBrier)}</Text>
+          <Text style={styles.scorePillLabel}>Accuracy</Text>
+          <Text style={styles.scorePillValue}>{formatScore(answer.accuracyScore)}</Text>
         </View>
-        <View style={[styles.scorePill, { borderColor: cat.primary, borderWidth: 1 }]}>
-          <Text style={styles.scorePillLabel}>Benchmark</Text>
-          <Text style={[styles.scorePillValue, { color: cat.primary }]}>
-            {formatBrier(answer.benchmarkBrier)}
-          </Text>
+        <View style={styles.scorePill}>
+          <Text style={styles.scorePillLabel}>Speed</Text>
+          <Text style={styles.scorePillValue}>{formatScore(answer.speedScore)}</Text>
         </View>
       </View>
 
       <Text style={styles.benchmarkNote}>
-        Benchmark = 45% crowd + 55% AI models · Truth: {truthLabel(round.truthValue)} ({truthDisplay})
+        Truth: {truthLabel(round.truthValue)} ({truthDisplay}) · {formatMs(answer.responseTimeMs)}
       </Text>
 
       <ProbabilityTrack label="Your forecast" value={answer.answerValue} highlight />
@@ -125,7 +117,7 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
               <Text style={styles.roundTitle}>Round {round.roundNumber}</Text>
               {answer ? (
                 <Text style={styles.roundMeta}>
-                  {formatRbp(answer.roundScore)} RBP · {formatMs(answer.responseTimeMs)}
+                  {formatScore(answer.roundScore)} pts · {formatMs(answer.responseTimeMs)}
                 </Text>
               ) : (
                 <Text style={styles.roundMeta}>Not played</Text>
@@ -135,24 +127,9 @@ export function RoundBreakdown({ round, categoryId }: RoundBreakdownProps) {
           </Pressable>
           <View style={styles.headerRight}>
             {answer && (
-              <View
-                style={[
-                  styles.pointsBadge,
-                  {
-                    backgroundColor:
-                      answer.roundScore >= 0 ? theme.colors.accentMuted : theme.colors.dangerMuted,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.pointsBadgeText,
-                    {
-                      color: answer.roundScore >= 0 ? theme.colors.success : theme.colors.danger,
-                    },
-                  ]}
-                >
-                  {formatRbp(answer.roundScore)}
+              <View style={[styles.pointsBadge, { backgroundColor: cat.primaryMuted }]}>
+                <Text style={[styles.pointsBadgeText, { color: cat.primary }]}>
+                  {formatScore(answer.roundScore)}
                 </Text>
               </View>
             )}

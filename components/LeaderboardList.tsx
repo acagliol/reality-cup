@@ -51,7 +51,7 @@ export function LeaderboardList({ data, compact }: LeaderboardListProps) {
       <View style={styles.headerRow}>
         <Text style={[styles.headerCell, styles.rankCol]}>#</Text>
         <Text style={[styles.headerCell, styles.nameCol]}>Forecaster</Text>
-        <Text style={[styles.headerCell, styles.scoreCol]}>RBP</Text>
+        <Text style={[styles.headerCell, styles.scoreCol]}>Score</Text>
       </View>
 
       {data.topEntries.map((entry) => (

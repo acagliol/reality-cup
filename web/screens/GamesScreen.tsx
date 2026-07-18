@@ -46,6 +46,16 @@ export function GamesScreen() {
             Retry
           </button>
         </div>
+      ) : categories.length === 0 ? (
+        <div className={styles.center}>
+          <p className={styles.errorTitle}>No markets available</p>
+          <p className={styles.errorText}>
+            Categories are missing in Supabase. Run npm run pools:seed:descriptions.
+          </p>
+          <button type="button" className={styles.retryButton} onClick={refreshCategories}>
+            Retry
+          </button>
+        </div>
       ) : (
         <div className={styles.list}>
           {categories.map((item) => (
@@ -78,7 +88,7 @@ export function GamesScreen() {
                 </div>
               </div>
 
-              <span className={styles.cardMeta}>10 images · 10s window · Brier + RBP</span>
+              <span className={styles.cardMeta}>10 images · 10s window · accuracy + speed</span>
             </button>
           ))}
         </div>

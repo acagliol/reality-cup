@@ -101,17 +101,16 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
           </Text>
           <Text style={styles.heroText}>Probability forecasts per session</Text>
           {bestScore > 0 && (
-            <Text style={styles.bestScore}>Your best RBP: {bestScore}</Text>
+            <Text style={styles.bestScore}>Your best score: {bestScore}</Text>
           )}
         </View>
 
         <View style={styles.rules}>
           <Text style={styles.rulesTitle}>Scoring</Text>
-          <Text style={styles.rule}>• Submit 1–99% probability the image is fake</Text>
+          <Text style={styles.rule}>• Submit 0–100% probability the image is fake</Text>
           <Text style={styles.rule}>• Ground truth is Real (0) or Fake (100)</Text>
-          <Text style={styles.rule}>• Brier = (p − y)² — lower is better</Text>
-          <Text style={styles.rule}>• RBP vs 45% crowd + 55% AI models</Text>
-          <Text style={styles.rule}>• Must beat the benchmark to stay positive</Text>
+          <Text style={styles.rule}>• Round score = 70% accuracy + 30% speed</Text>
+          <Text style={styles.rule}>• Faster answers earn more speed points</Text>
           <Text style={styles.rule}>• {ROUND_TIME_SECONDS}s countdown — lock before zero</Text>
           <Text style={styles.rule}>• Compare vs Codex, Cursor & Gemini after</Text>
         </View>
@@ -134,7 +133,7 @@ export function CategoryDetailScreen({ categoryId }: CategoryDetailScreenProps) 
         title={category.name}
         subtitle={
           bestScore > 0
-            ? `Your best RBP: ${bestScore}`
+            ? `Your best score: ${bestScore}`
             : 'Complete a session to appear on the board'
         }
         data={leaderboardData}

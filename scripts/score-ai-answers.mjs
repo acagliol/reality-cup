@@ -144,6 +144,8 @@ async function main() {
 
     let scored = 0;
     let skipped = 0;
+    let failed = 0;
+    const failures = [];
 
     for (const round of rounds) {
       for (const model of models) {
@@ -158,11 +160,18 @@ async function main() {
           answerValue = mockAiAnswer(round.id, model.id);
         } else {
           console.log(`Scoring ${round.id} with ${model.name} (${model.openrouterModel})…`);
-          answerValue = await scoreImageWithOpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY,
-            openrouterModel: model.openrouterModel,
-            imageUrl: round.image_url,
-          });
+          try {
+            answerValue = await scoreImageWithOpenRouter({
+              apiKey: process.env.OPENROUTER_API_KEY,
+              openrouterModel: model.openrouterModel,
+              imageUrl: round.image_url,
+            });
+          } catch (error) {
+            failed++;
+            failures.push({ roundId: round.id, modelId: model.id, error: error.message });
+            console.error(`✖ ${round.id} / ${model.id} — ${error.message}`);
+            continue;
+          }
         }
 
         if (dryRun) {
@@ -175,7 +184,14 @@ async function main() {
       }
     }
 
-    console.log(`Done. Scored ${scored}, skipped ${skipped} existing.`);
+    console.log(`Done. Scored ${scored}, skipped ${skipped} existing, failed ${failed}.`);
+    if (failures.length > 0) {
+      console.log('Failures:');
+      for (const failure of failures) {
+        console.log(`  ${failure.roundId} / ${failure.modelId}: ${failure.error}`);
+      }
+      process.exitCode = 1;
+    }
     return;
   }
 

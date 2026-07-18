@@ -45,8 +45,19 @@ export function GamesScreen() {
             <Text style={styles.retryText}>Retry</Text>
           </Pressable>
         </View>
+      ) : categories.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.errorTitle}>No markets available</Text>
+          <Text style={styles.errorText}>
+            Categories are missing in Supabase. Run npm run pools:seed:descriptions.
+          </Text>
+          <Pressable style={styles.retryButton} onPress={refreshCategories}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : (
         <FlatList
+          style={styles.listContainer}
           data={categories}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
@@ -80,7 +91,7 @@ export function GamesScreen() {
                 </View>
               </View>
 
-              <Text style={styles.cardMeta}>10 images · 10s window · Brier + RBP</Text>
+              <Text style={styles.cardMeta}>10 images · 10s window · accuracy + speed</Text>
             </Pressable>
           )}
         />
@@ -131,6 +142,9 @@ const styles = StyleSheet.create({
   retryText: {
     color: theme.colors.text,
     fontWeight: '700',
+  },
+  listContainer: {
+    flex: 1,
   },
   list: {
     paddingHorizontal: theme.spacing.xl,

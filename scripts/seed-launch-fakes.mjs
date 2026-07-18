@@ -12,7 +12,7 @@ import { execSync } from 'node:child_process';
 import { createReadStream, existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { TRUTH_FAKE } from '../data/category-pools/config.mjs';
+import { TRUTH_FAKE, TRUTH_REAL } from '../data/category-pools/config.mjs';
 import { createAdminClient } from './lib/supabaseAdmin.mjs';
 import { mockAiAnswer } from './lib/sponsorModels.mjs';
 
@@ -130,7 +130,7 @@ async function maxRealSortOrder(client, categoryId) {
     .from('round_content')
     .select('sort_order')
     .eq('category_id', categoryId)
-    .eq('truth_value', 5)
+    .eq('truth_value', TRUTH_REAL)
     .order('sort_order', { ascending: false })
     .limit(1);
 
@@ -143,7 +143,10 @@ async function seedCategoryFakes(client, { categoryId, zipFolder, extractRoot, p
   if (!fakeDir) throw new Error(`Missing FAKE/${zipFolder} in zip`);
 
   const files = listImages(fakeDir);
-  if (files.length === 0) throw new Error(`No images in FAKE/${zipFolder}`);
+  if (files.length === 0) {
+    console.log(`  skipping ${categoryId}: no images in FAKE/${zipFolder}`);
+    return 0;
+  }
 
   const selected = files.slice(0, perSide ?? files.length);
   console.log(`  ${categoryId}: ${selected.length} fake images from ${zipFolder}`);
@@ -203,6 +206,9 @@ async function main() {
   const zipPath = flags['zip-path'] ?? process.env.LAUNCH_FAKES_ZIP;
   const dryRun = Boolean(flags['dry-run']);
   const perSide = flags['per-side'] ? Number(flags['per-side']) : 50;
+  const categoryFilter = flags.category
+    ? flags.category.split(',').map((s) => s.trim()).filter(Boolean)
+    : null;
 
   if (!zipPath || !existsSync(zipPath)) {
     console.error(`Zip path required and must exist.
@@ -220,7 +226,15 @@ async function main() {
     if (client) await ensureBucket(client);
 
     let total = 0;
-    for (const entry of FAKE_FOLDERS) {
+    const entries = categoryFilter
+      ? FAKE_FOLDERS.filter((entry) => categoryFilter.includes(entry.categoryId))
+      : FAKE_FOLDERS;
+
+    if (categoryFilter && entries.length === 0) {
+      throw new Error(`Unknown category id(s): ${categoryFilter.join(', ')}`);
+    }
+
+    for (const entry of entries) {
       console.log(`Processing ${entry.categoryId}…`);
       total += await seedCategoryFakes(client, {
         ...entry,
