@@ -68,11 +68,14 @@ export interface LeaderboardEntry {
   playerName: string;
   score: number;
   isCurrentPlayer: boolean;
+  isAiModel?: boolean;
+  subtitle?: string;
 }
 
 export interface CategoryLeaderboard {
   topEntries: LeaderboardEntry[];
   pinnedPlayerEntry: LeaderboardEntry | null;
+  aiModelEntries: LeaderboardEntry[];
 }
 
 export interface TrophyEntry {

@@ -69,12 +69,16 @@ export interface LeaderboardEntry {
   playerName: string;
   score: number;
   isCurrentPlayer: boolean;
+  isAiModel?: boolean;
+  subtitle?: string;
 }
 
 export interface CategoryLeaderboard {
   topEntries: LeaderboardEntry[];
   /** Shown below top 10 when the current player is ranked outside the top 10 */
   pinnedPlayerEntry: LeaderboardEntry | null;
+  /** Sponsor AI models scored on the same category images, shown after humans */
+  aiModelEntries: LeaderboardEntry[];
 }
 
 export interface TrophyEntry {

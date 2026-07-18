@@ -17,15 +17,18 @@ function LeaderboardRow({
 }) {
   return (
     <div
-      className={`${styles.row} ${compact ? styles.rowCompact : ''} ${entry.isCurrentPlayer ? styles.rowYou : ''}`}
+      className={`${styles.row} ${compact ? styles.rowCompact : ''} ${entry.isCurrentPlayer ? styles.rowYou : ''} ${entry.isAiModel ? styles.rowAi : ''}`}
     >
-      <span className={`${styles.rank} mono ${entry.rank <= 3 ? styles.rankTop : ''}`}>
-        #{entry.rank}
+      <span className={`${styles.rank} mono ${entry.rank <= 3 && !entry.isAiModel ? styles.rankTop : ''}`}>
+        {entry.isAiModel ? 'AI' : `#${entry.rank}`}
       </span>
-      <span className={`${styles.name} ${entry.isCurrentPlayer ? styles.nameYou : ''}`}>
-        {entry.playerName}
-        {entry.isCurrentPlayer ? ' (you)' : ''}
-      </span>
+      <div className={styles.nameWrap}>
+        <span className={`${styles.name} ${entry.isCurrentPlayer ? styles.nameYou : ''}`}>
+          {entry.playerName}
+          {entry.isCurrentPlayer ? ' (you)' : ''}
+        </span>
+        {entry.subtitle ? <span className={styles.subtitle}>{entry.subtitle}</span> : null}
+      </div>
       <span className={`${styles.score} mono`}>
         {Number.isFinite(entry.score) ? entry.score.toFixed(2) : '—'}
       </span>
@@ -34,7 +37,10 @@ function LeaderboardRow({
 }
 
 export function LeaderboardList({ data, compact }: LeaderboardListProps) {
-  const hasEntries = data.topEntries.length > 0 || data.pinnedPlayerEntry !== null;
+  const hasEntries =
+    data.topEntries.length > 0 ||
+    data.pinnedPlayerEntry !== null ||
+    data.aiModelEntries.length > 0;
 
   if (!hasEntries) {
     return (
@@ -65,6 +71,19 @@ export function LeaderboardList({ data, compact }: LeaderboardListProps) {
             <div className={styles.dividerLine} />
           </div>
           <LeaderboardRow entry={data.pinnedPlayerEntry} compact={compact} />
+        </>
+      )}
+
+      {data.aiModelEntries.length > 0 && (
+        <>
+          <div className={styles.divider}>
+            <div className={styles.dividerLine} />
+            <span className={styles.dividerText}>AI models</span>
+            <div className={styles.dividerLine} />
+          </div>
+          {data.aiModelEntries.map((entry) => (
+            <LeaderboardRow key={`ai-${entry.playerName}`} entry={entry} compact={compact} />
+          ))}
         </>
       )}
     </div>

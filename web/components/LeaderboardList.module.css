@@ -46,6 +46,11 @@
   background: #f7ffde;
 }
 
+.rowAi {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
 .rank {
   width: 36px;
   font-weight: 800;
@@ -57,9 +62,24 @@
 }
 
 .name {
-  flex: 1;
   font-weight: 600;
   color: #1a1919;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: #a1a1aa;
+  margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

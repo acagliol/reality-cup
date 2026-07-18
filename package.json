@@ -40,6 +40,8 @@
     "pools:seed:random": "node --env-file=.env.local scripts/seed-random-category.mjs",
     "pools:seed:descriptions": "node --env-file=.env.local scripts/seed-category-descriptions.mjs",
     "pools:sql": "node scripts/generate-category-seed-sql.mjs",
+    "leaderboard:seed": "node --env-file=.env.local scripts/seed-fake-leaderboard.mjs",
+    "leaderboard:seed:clear": "node --env-file=.env.local scripts/seed-fake-leaderboard.mjs --clear",
     "web:dev": "npm run dev --prefix web",
     "web:build": "npm run build --prefix web",
     "web:start": "npm run start --prefix web"

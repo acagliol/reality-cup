@@ -20,13 +20,23 @@ function LeaderboardRow({
         styles.row,
         compact && styles.rowCompact,
         entry.isCurrentPlayer && styles.rowYou,
+        entry.isAiModel && styles.rowAi,
       ]}
     >
-      <Text style={[styles.rank, entry.rank <= 3 && styles.rankTop]}>#{entry.rank}</Text>
-      <Text style={[styles.name, entry.isCurrentPlayer && styles.nameYou]} numberOfLines={1}>
-        {entry.playerName}
-        {entry.isCurrentPlayer ? ' (you)' : ''}
+      <Text style={[styles.rank, entry.rank <= 3 && !entry.isAiModel && styles.rankTop]}>
+        {entry.isAiModel ? 'AI' : `#${entry.rank}`}
       </Text>
+      <View style={styles.nameWrap}>
+        <Text style={[styles.name, entry.isCurrentPlayer && styles.nameYou]} numberOfLines={1}>
+          {entry.playerName}
+          {entry.isCurrentPlayer ? ' (you)' : ''}
+        </Text>
+        {entry.subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {entry.subtitle}
+          </Text>
+        ) : null}
+      </View>
       <Text style={[styles.score, { color: theme.colors.text }]}>
         {Number.isFinite(entry.score) ? entry.score.toFixed(2) : '—'}
       </Text>
@@ -35,7 +45,10 @@ function LeaderboardRow({
 }
 
 export function LeaderboardList({ data, compact }: LeaderboardListProps) {
-  const hasEntries = data.topEntries.length > 0 || data.pinnedPlayerEntry !== null;
+  const hasEntries =
+    data.topEntries.length > 0 ||
+    data.pinnedPlayerEntry !== null ||
+    data.aiModelEntries.length > 0;
 
   if (!hasEntries) {
     return (
@@ -66,6 +79,23 @@ export function LeaderboardList({ data, compact }: LeaderboardListProps) {
             <View style={styles.dividerLine} />
           </View>
           <LeaderboardRow entry={data.pinnedPlayerEntry} compact={compact} />
+        </>
+      )}
+
+      {data.aiModelEntries.length > 0 && (
+        <>
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>AI models</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          {data.aiModelEntries.map((entry) => (
+            <LeaderboardRow
+              key={`ai-${entry.playerName}`}
+              entry={entry}
+              compact={compact}
+            />
+          ))}
         </>
       )}
     </View>
@@ -118,6 +148,10 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accent,
     backgroundColor: theme.colors.accentMuted,
   },
+  rowAi: {
+    borderColor: theme.colors.success,
+    backgroundColor: theme.colors.surfaceAlt,
+  },
   rank: {
     width: 36,
     fontWeight: '800',
@@ -127,10 +161,17 @@ const styles = StyleSheet.create({
   rankTop: {
     color: theme.colors.text,
   },
-  name: {
+  nameWrap: {
     flex: 1,
+  },
+  name: {
     fontWeight: '600',
     color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    marginTop: 2,
   },
   nameYou: {
     fontWeight: '800',
