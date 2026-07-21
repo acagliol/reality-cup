@@ -1,50 +1,51 @@
-# ramphackathon
+# Reality Cup
 
-Expo (React Native, iOS) + Supabase starter.
+*Price the probability. Beat the machines. Find the fake.*
 
-## Stack
-- **Expo SDK 57** / React Native 0.86 / TypeScript — runs in **Expo Go** on iOS.
-- **Supabase** (`@supabase/supabase-js`) for DB + auth, with session persistence
-  via `@react-native-async-storage/async-storage`.
+Reality Cup is a deepfake-detection game we built where guessing "real" or "fake" isn't
+enough. For every image you have to say *how sure* you are — something like "there's an
+82% chance this one is fake" — and you're scored on how well you actually price that
+uncertainty. Be confident and right and you clean up. Be confident and wrong and it
+hurts. Hedge at 50% on everything and you go nowhere.
 
-## One-time setup
+The twist is that you're not just playing against the room. Each image is also graded by
+AI detection models, so the real question is whether people can still read a fake better
+than the machines when the scoring rewards calibration instead of vibes. Everyone in the
+room prices the same image, the truth gets revealed, and you watch where you landed
+against the crowd, the models, and reality.
 
-### 1. Create a Supabase project
-1. Go to https://app.supabase.com and create a new project (free tier is fine).
-2. Open **SQL Editor → New query**, paste the contents of
-   [`supabase/schema.sql`](./supabase/schema.sql), and **Run** it. This creates a
-   demo `notes` table so the starter screen has something to read/write.
 
-### 2. Add your keys
-1. In Supabase: **Settings → API**. Copy the **Project URL** and the **anon
-   public** key.
-2. `cp .env.example .env` and paste both values in:
-   ```
-   EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
-   ```
-   > `.env` is git-ignored. The anon key is safe in a client app — access is
-   > gated by Row Level Security policies, not by hiding the key.
+## Ramp Builders' Cup
 
-### 3. Run it
-```bash
-npm run start        # then scan the QR code with the Expo Go app on your iPhone
-# or
-npm run ios          # opens the iOS simulator (requires Xcode)
-```
-Get **Expo Go** from the iOS App Store. Phone and laptop must be on the same
-Wi-Fi. If the QR won't connect, run `npx expo start --tunnel`.
+We built Reality Cup at the Ramp Builders' Cup in NYC on July 18, 2026, a hackathon
+co-sponsored by Cursor and Codex. We had four hours to ship it.
 
-## Layout
-```
-App.tsx              Demo screen: read/write the notes table
-lib/supabase.ts      Configured Supabase client (reads env vars)
-supabase/schema.sql  Starter DB schema — run in the Supabase SQL editor
-.env.example         Template for your keys
-```
+It ended up as a **finalist in the Best Game track**, and we got to present it live in
+the finalist demos. We also entered the **Best Use of Codex** track — we leaned on Codex
+heavily to design the scoring, build the game loop, and iterate fast under the clock. At
+one point during the science-fair demos a **Cursor engineer came by our table** and we
+walked them through a full game, which was a highlight of the day. We also came away with
+some **Ramp and Cursor merch**, which was a fun bonus.
 
-## Notes
-- Env vars must be prefixed `EXPO_PUBLIC_` to reach the app bundle. Restart the
-  dev server after editing `.env`.
-- The demo RLS policy allows anonymous read/write — fine for a hackathon,
-  **tighten before shipping** anything real.
+## Where This Could Go
+
+Right now Reality Cup is a game, but there's a bigger idea underneath it. Every time
+someone prices an image, they're generating a signal about how humans read that
+particular fake — which ones fool people, which ones don't, and how confident people are
+when they get it right or wrong.
+
+The natural next step is to let people **upload their own images** and feed them into the
+dataset. Over time that turns into a growing, human-labeled collection of real and fake
+media, complete with per-image analytics: crowd calibration, where the AI detectors
+agreed or disagreed with people, and which fakes were the hardest to catch. That's
+genuinely valuable data.
+
+Longer term, we think this could be **sponsored by companies and labs** who want to
+**train better deepfake-detection models** — the human-vs-machine calibration data is
+exactly the kind of signal that helps models get sharper at spotting fakes. There's a
+real path to eventually **licensing that dataset** to the people building detection tools.
+
+None of that is built yet — these are potential future goals. But the north star is
+simple: make a game people actually want to play, and in the process **build shared
+knowledge about deepfakes and help society get better at telling what's real**, all while
+having fun competing over it.
